@@ -10,12 +10,14 @@ application {
     packageName com.jhipster.demo.store
     serviceDiscoveryType eureka
     authenticationType jwt
-    prodDatabaseType mysql
+    databaseType couchbase
+    prodDatabaseType couchbase
+    searchEngine couchbase
     cacheProvider no
+    enableHibernateCache false
     buildTool gradle
     clientFramework react
-    useSass true
-    testFrameworks [protractor]
+    testFrameworks [cypress]
     reactive true
   }
   entities *
@@ -24,12 +26,16 @@ application {
 application {
   config {
     baseName product
+    reactive true
     applicationType microservice
     packageName com.jhipster.demo.product
     serviceDiscoveryType eureka
     authenticationType jwt
-    prodDatabaseType mysql
-    cacheProvider hazelcast
+    databaseType couchbase
+    prodDatabaseType couchbase
+    searchEngine couchbase
+    cacheProvider no
+    enableHibernateCache false
     buildTool gradle
     serverPort 8081
     skipUserManagement true
@@ -44,7 +50,11 @@ application {
     packageName com.jhipster.demo.invoice
     serviceDiscoveryType eureka
     authenticationType jwt
-    prodDatabaseType mysql
+    databaseType couchbase
+    prodDatabaseType couchbase
+    searchEngine couchbase
+    cacheProvider no
+    enableHibernateCache false
     buildTool gradle
     serverPort 8082
     skipUserManagement true
@@ -59,9 +69,9 @@ application {
     packageName com.jhipster.demo.notification
     serviceDiscoveryType eureka
     authenticationType jwt
-    databaseType mongodb
-    prodDatabaseType mongodb
-    devDatabaseType mongodb
+    databaseType couchbase
+    prodDatabaseType couchbase
+    searchEngine couchbase
     cacheProvider no
     enableHibernateCache false
     buildTool gradle
@@ -198,3 +208,10 @@ enum NotificationType {
 }
 
 microservice Notification with notification
+
+deployment {
+  deploymentType docker-compose
+  appsFolders [store, product, invoice, notification]
+  dockerRepositoryName "tayebchlyah"
+  monitoring prometheus
+}
