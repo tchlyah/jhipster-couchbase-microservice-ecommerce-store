@@ -1,0 +1,14 @@
+{
+  "login": "user",
+  "password": "$2a$10$VEjxo0jq2YG9Rbk2HmX9S.k1uZBGYUHdUcid3g/vfiEl7lwWgOH/K",
+
+  "firstName": "User",
+  "lastName": "User",
+  "email": "user@localhost",
+  "activated": true,
+  "langKey": "en",
+  "createdBy": "system",
+  "lastModifiedBy": "system",
+  "authorities": ["ROLE_USER"],
+  "_class": "com.jhipster.demo.store.domain.User"
+}
