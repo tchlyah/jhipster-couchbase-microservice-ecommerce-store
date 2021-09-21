@@ -1,0 +1,20 @@
+type: object
+
+key: _id
+
+data:
+  count: 20
+
+properties:
+  _id:
+    data:
+      build: `productCategory__${faker.random.uuid()}`
+  _class:
+    data:
+      value: "com.jhipster.demo.product.domain.ProductCategory"
+  name:
+    data:
+      fake: '{{commerce.department}}'
+  description:
+    data:
+      fake: '{{lorem.paragraph}}'

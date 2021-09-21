@@ -1,0 +1,31 @@
+type: object
+
+key: _id
+
+data:
+  count: 100
+  dependencies:
+    - productCategory.yml
+
+properties:
+  _id:
+    data:
+      build: `product__${faker.random.uuid()}`
+  _class:
+    data:
+      value: "com.jhipster.demo.product.domain.Product"
+  name:
+    data:
+      fake: '{{commerce.productName}}'
+  description:
+    data:
+      fake: '{{lorem.paragraph}}'
+  price:
+    data:
+      fake: '{{commerce.price}}'
+  productSize:
+    data:
+      build: faker.random.arrayElement(['S', 'M', 'L', 'XL', 'XXL'])
+  productCategory:
+    data:
+      build: faker.random.arrayElement(documents.productCategory)._id

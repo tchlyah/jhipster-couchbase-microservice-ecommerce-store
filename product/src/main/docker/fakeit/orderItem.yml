@@ -1,0 +1,39 @@
+type: object
+
+key: _id
+
+data:
+  count: 2000
+  dependencies:
+    - productOrder.yml
+    - product.yml
+  pre_build: |
+    product = faker.random.arrayElement(documents.product)
+    productOrder = faker.random.arrayElement(documents.productOrder)
+  post_build: |
+    productOrder.orderItems.push(this._id)
+
+properties:
+  _id:
+    data:
+      build: `product__${faker.random.uuid()}`
+  _class:
+    data:
+      value: "com.jhipster.demo.product.domain.OrderItem"
+  quantity:
+    data:
+      build: |
+        chance.integer({ min: 1, max: 10 })
+  status:
+    data:
+      build: faker.random.arrayElement(['AVAILABLE', 'OUT_OF_STOCK', 'BACK_ORDER'])
+  product:
+    data:
+      build: product._id
+  order:
+    data:
+      build: productOrder._id
+  totalPrice:
+    data:
+      build: |
+        product.price * this.quantity

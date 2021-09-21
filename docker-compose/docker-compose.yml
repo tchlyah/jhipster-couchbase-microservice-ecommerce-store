@@ -38,6 +38,14 @@ services:
       dockerfile: couchbase/Couchbase.Dockerfile
     environment:
       - BUCKET=product
+    ports:
+      - 8091:8091
+
+  product-fakeit:
+    image: bentonam/fakeit
+    command: fakeit couchbase -v -s product-couchbase -b product -u Administrator -p password /root/*.yml
+    volumes:
+      - ../product/src/main/docker/fakeit:/root
 
   invoice:
     image: invoice

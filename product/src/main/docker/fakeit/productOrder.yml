@@ -1,0 +1,36 @@
+type: object
+
+key: _id
+
+data:
+  count: 500
+  pre_run: |
+    globals.count = 0;
+#  dependencies:
+#    - orderItem.yml
+
+properties:
+  _id:
+    data:
+      build: `productOrder__${faker.random.uuid()}`
+  _class:
+    data:
+      value: "com.jhipster.demo.product.domain.ProductOrder"
+  placedDate:
+    data:
+      build: faker.date.past(2).getTime()
+  status:
+    data:
+      build: faker.random.arrayElement(['COMPLETED', 'PENDING', 'CANCELLED'])
+  code:
+    data:
+      fake: '{{random.number}}'
+  customer:
+    data:
+      fake: '{{internet.userName}}'
+  invoiceId:
+    data:
+      build: ++globals.count
+  orderItems:
+    type: array
+
