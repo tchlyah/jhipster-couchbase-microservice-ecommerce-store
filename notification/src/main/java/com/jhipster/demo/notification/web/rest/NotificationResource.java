@@ -8,8 +8,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -189,18 +187,5 @@ public class NotificationResource {
         log.debug("REST request to delete Notification : {}", id);
         notificationRepository.deleteById(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
-    }
-
-    /**
-     * {@code SEARCH  /_search/notifications?query=:query} : search for the notification corresponding
-     * to the query.
-     *
-     * @param query the query of the notification search.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/notifications")
-    public List<Notification> searchNotifications(@RequestParam String query) {
-        log.debug("REST request to search Notifications for query {}", query);
-        return notificationRepository.search(query);
     }
 }

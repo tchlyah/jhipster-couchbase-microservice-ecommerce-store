@@ -1,7 +1,7 @@
 apply plugin: "war"
 
 bootWar {
-    mainClassName = "com.jhipster.demo.notification.NotificationApp"
+    mainClass = "com.jhipster.demo.notification.NotificationApp"
     includes = ["WEB-INF/**", "META-INF/**"]
 }
 

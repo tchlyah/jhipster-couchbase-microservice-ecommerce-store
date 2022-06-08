@@ -1,0 +1,5 @@
+CREATE COLLECTION `${bucket}`.`${scope}`.`notification`;
+
+CREATE INDEX `notification_type` ON `${bucket}`.`${scope}`.`notification`(type)
+    WHERE `type` = "notification"
+    WITH { "defer_build" : true };

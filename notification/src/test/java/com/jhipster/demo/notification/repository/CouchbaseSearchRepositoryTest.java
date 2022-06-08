@@ -8,12 +8,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class JHipsterCouchbaseRepositoryTest {
+class CouchbaseSearchRepositoryTest {
 
     @MethodSource
     @ParameterizedTest
     void queryString(String query, SearchQuery ftsQuery) {
-        assertThat(JHipsterCouchbaseRepository.searchQuery(query).toString()).isEqualTo(ftsQuery.toString());
+        assertThat(CouchbaseSearchRepository.searchQuery(query).toString()).isEqualTo(ftsQuery.toString());
     }
 
     @SuppressWarnings("unused")

@@ -1,6 +1,7 @@
 package com.jhipster.demo.notification.domain;
 
 import static com.jhipster.demo.notification.config.Constants.ID_DELIMITER;
+import static com.jhipster.demo.notification.domain.Notification.TYPE_NAME;
 import static org.springframework.data.couchbase.core.mapping.id.GenerationStrategy.UNIQUE;
 
 import com.jhipster.demo.notification.domain.enumeration.NotificationType;
@@ -8,24 +9,23 @@ import java.io.Serializable;
 import java.time.Instant;
 import javax.validation.constraints.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.couchbase.core.mapping.Document;
 import org.springframework.data.couchbase.core.mapping.Field;
 import org.springframework.data.couchbase.core.mapping.id.GeneratedValue;
-import org.springframework.data.couchbase.core.mapping.id.IdPrefix;
+import org.springframework.data.couchbase.repository.Collection;
 
 /**
  * A Notification.
  */
 @Document
+@TypeAlias(TYPE_NAME)
+@Collection(TYPE_NAME)
 public class Notification implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String PREFIX = "notification";
-
-    @SuppressWarnings("unused")
-    @IdPrefix
-    private String prefix = PREFIX;
+    public static final String TYPE_NAME = "notification";
 
     @Id
     @GeneratedValue(strategy = UNIQUE, delimiter = ID_DELIMITER)

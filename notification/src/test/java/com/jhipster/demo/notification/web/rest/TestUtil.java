@@ -13,7 +13,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
@@ -31,9 +30,6 @@ import reactor.core.publisher.Mono;
 public final class TestUtil {
 
     private static final ObjectMapper mapper = createObjectMapper();
-    private static final int MAX_ATTEMPTS = 3;
-
-    // private static final Delay DEFAULT_DELAY = Delay.exponential(TimeUnit.SECONDS);
 
     private static ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
@@ -208,7 +204,7 @@ public final class TestUtil {
                     .switchIfEmpty(Mono.error(new NoSuchElementException()))
             )
             .retry()
-            .timeout(Duration.ofSeconds(5))
+            .timeout(Duration.ofSeconds(60))
             .block();
     }
 

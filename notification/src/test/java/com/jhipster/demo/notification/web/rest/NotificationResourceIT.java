@@ -51,7 +51,6 @@ class NotificationResourceIT {
 
     private static final String ENTITY_API_URL = "/api/notifications";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
-    private static final String ENTITY_SEARCH_API_URL = "/api/_search/notifications";
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -511,27 +510,5 @@ class NotificationResourceIT {
         SecurityContextHolder.setContext(TestSecurityContextHolder.getContext());
         List<Notification> notificationList = notificationRepository.findAll();
         assertThat(notificationList).hasSize(databaseSizeBeforeDelete - 1);
-    }
-
-    @Test
-    void searchNotification() throws Exception {
-        // Initialize the database
-        notificationRepository.save(notification);
-
-        // Wait for the notification to be indexed
-        TestUtil.retryUntilNotEmpty(() -> notificationRepository.search("id:" + notification.getId()));
-
-        // Search the notification
-        restNotificationMockMvc
-            .perform(get(ENTITY_SEARCH_API_URL + "?query=id:" + notification.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(notification.getId())))
-            .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())))
-            .andExpect(jsonPath("$.[*].details").value(hasItem(DEFAULT_DETAILS)))
-            .andExpect(jsonPath("$.[*].sentDate").value(hasItem(DEFAULT_SENT_DATE.toString())))
-            .andExpect(jsonPath("$.[*].format").value(hasItem(DEFAULT_FORMAT.toString())))
-            .andExpect(jsonPath("$.[*].userId").value(hasItem(DEFAULT_USER_ID.intValue())))
-            .andExpect(jsonPath("$.[*].productId").value(hasItem(DEFAULT_PRODUCT_ID.intValue())));
     }
 }
