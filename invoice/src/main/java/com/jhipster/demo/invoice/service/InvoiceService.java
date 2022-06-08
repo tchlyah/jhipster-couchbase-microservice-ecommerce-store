@@ -35,6 +35,17 @@ public class InvoiceService {
     }
 
     /**
+     * Update a invoice.
+     *
+     * @param invoice the entity to save.
+     * @return the persisted entity.
+     */
+    public Invoice update(Invoice invoice) {
+        log.debug("Request to save Invoice : {}", invoice);
+        return invoiceRepository.save(invoice);
+    }
+
+    /**
      * Partially update a invoice.
      *
      * @param invoice the entity to update partially.
@@ -103,17 +114,5 @@ public class InvoiceService {
     public void delete(String id) {
         log.debug("Request to delete Invoice : {}", id);
         invoiceRepository.deleteById(id);
-    }
-
-    /**
-     * Search for the invoice corresponding to the query.
-     *
-     * @param query the query of the search.
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    public Page<Invoice> search(String query, Pageable pageable) {
-        log.debug("Request to search for a page of Invoices for query {}", query);
-        return invoiceRepository.search(query, pageable);
     }
 }

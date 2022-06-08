@@ -1,0 +1,5 @@
+CREATE COLLECTION `${bucket}`.`${scope}`.`invoice`;
+
+CREATE INDEX `invoice_type` ON `${bucket}`.`${scope}`.`invoice`(type)
+    WHERE `type` = "invoice"
+    WITH { "defer_build" : true };

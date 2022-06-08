@@ -1,7 +1,7 @@
 package com.jhipster.demo.invoice.repository;
 
+import static com.jhipster.demo.invoice.domain.Invoice.TYPE_NAME;
 import static com.jhipster.demo.invoice.repository.JHipsterCouchbaseRepository.pageableStatement;
-import static com.jhipster.demo.invoice.repository.JHipsterCouchbaseRepository.searchQuery;
 
 import com.couchbase.client.java.query.QueryScanConsistency;
 import com.jhipster.demo.invoice.domain.Invoice;
@@ -22,35 +22,24 @@ import org.springframework.stereotype.Repository;
 public interface InvoiceRepository extends JHipsterCouchbaseRepository<Invoice, String> {
     String SELECT =
         "SELECT meta(b).id as __id, meta(b).cas as __cas, b.*" +
-        ", (SELECT `shipment`.*, meta(`shipment`).id FROM `shipments` `shipment`) as `shipments`" +
+        ", ARRAY OBJECT_ADD(item, 'id', meta(item).id) FOR item IN `shipments` END AS `shipments`" +
         " FROM #{#n1ql.bucket} b";
 
-    String JOIN = " LEFT NEST #{#n1ql.bucket} `shipments` ON KEYS b.`shipments`";
+    String JOIN = " LEFT NEST `shipment` `shipments` ON KEYS b.`shipments`";
+
+    String WHERE = " WHERE b.type = '" + TYPE_NAME + "'";
 
     default Page<Invoice> findAll(Pageable pageable) {
-        return new PageImpl<>(findAllBy(pageableStatement(pageable, "b")), pageable, count());
+        return new PageImpl<>(findAll(pageableStatement(pageable, "b")), pageable, count());
     }
 
-    @Query(SELECT + JOIN + " WHERE b.#{#n1ql.filter} #{[0]}")
+    @Query(SELECT + JOIN + WHERE + " #{[0]}")
     @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    List<Invoice> findAllBy(String pageableStatement);
+    List<Invoice> findAll(String pageableStatement);
 
-    @Query(SELECT + JOIN + " WHERE b.#{#n1ql.filter}")
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
+    @Query(SELECT + JOIN + WHERE)
     List<Invoice> findAll();
 
     @Query(SELECT + " USE KEYS $1" + JOIN)
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
     Optional<Invoice> findById(String id);
-
-    @Query(SELECT + JOIN + " WHERE b.#{#n1ql.filter} AND SEARCH(b, #{[0]}) #{[1]}")
-    List<Invoice> search(String queryString, String pageableStatement);
-
-    default List<Invoice> search(String queryString) {
-        return search(searchQuery(queryString).toString(), "");
-    }
-
-    default Page<Invoice> search(String queryString, Pageable pageable) {
-        return new PageImpl<>(search(searchQuery(queryString).toString(), pageableStatement(pageable, "b")));
-    }
 }
