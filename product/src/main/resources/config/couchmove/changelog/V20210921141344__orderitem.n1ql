@@ -1,0 +1,5 @@
+CREATE COLLECTION `${bucket}`.`${scope}`.`orderItem`;
+
+CREATE INDEX `orderItem_type` ON `${bucket}`.`${scope}`.`orderItem`(type)
+    WHERE `type` = "orderItem"
+    WITH { "defer_build" : true };

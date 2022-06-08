@@ -24,7 +24,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
  * Integration tests for the {@link ProductCategoryResource} REST controller.
  */
 @IntegrationTest
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_ENTITY_TIMEOUT)
 @WithMockUser
 class ProductCategoryResourceIT {
 
@@ -36,7 +36,6 @@ class ProductCategoryResourceIT {
 
     private static final String ENTITY_API_URL = "/api/product-categories";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
-    private static final String ENTITY_SEARCH_API_URL = "/api/_search/product-categories";
 
     @Autowired
     private ProductCategoryRepository productCategoryRepository;
@@ -465,31 +464,5 @@ class ProductCategoryResourceIT {
         SecurityContextHolder.setContext(TestSecurityContextHolder.getContext());
         List<ProductCategory> productCategoryList = productCategoryRepository.findAll().collectList().block();
         assertThat(productCategoryList).hasSize(databaseSizeBeforeDelete - 1);
-    }
-
-    @Test
-    void searchProductCategory() {
-        // Initialize the database
-        productCategoryRepository.save(productCategory).block();
-
-        // Wait for the productCategory to be indexed
-        TestUtil.retryUntilNotEmpty(() -> productCategoryRepository.search("id:" + productCategory.getId()).collectList().block());
-
-        // Search the productCategory
-        webTestClient
-            .get()
-            .uri(ENTITY_SEARCH_API_URL + "?query=id:" + productCategory.getId())
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .expectHeader()
-            .contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.[*].id")
-            .value(hasItem(productCategory.getId()))
-            .jsonPath("$.[*].name")
-            .value(hasItem(DEFAULT_NAME))
-            .jsonPath("$.[*].description")
-            .value(hasItem(DEFAULT_DESCRIPTION));
     }
 }

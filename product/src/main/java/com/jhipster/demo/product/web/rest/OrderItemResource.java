@@ -113,7 +113,7 @@ public class OrderItemResource {
                 }
 
                 return orderItemService
-                    .save(orderItem)
+                    .update(orderItem)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                     .map(result ->
                         ResponseEntity
@@ -176,13 +176,16 @@ public class OrderItemResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of orderItems in body.
      */
     @GetMapping("/order-items")
-    public Mono<ResponseEntity<List<OrderItem>>> getAllOrderItems(Pageable pageable, ServerHttpRequest request) {
+    public Mono<ResponseEntity<List<OrderItem>>> getAllOrderItems(
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable,
+        ServerHttpRequest request
+    ) {
         log.debug("REST request to get a page of OrderItems");
         return orderItemService
             .countAll()
             .zipWith(orderItemService.findAll(pageable).collectList())
-            .map(countWithEntities -> {
-                return ResponseEntity
+            .map(countWithEntities ->
+                ResponseEntity
                     .ok()
                     .headers(
                         PaginationUtil.generatePaginationHttpHeaders(
@@ -190,8 +193,8 @@ public class OrderItemResource {
                             new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
                         )
                     )
-                    .body(countWithEntities.getT2());
-            });
+                    .body(countWithEntities.getT2())
+            );
     }
 
     /**
@@ -224,28 +227,5 @@ public class OrderItemResource {
                     ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build()
                 )
             );
-    }
-
-    /**
-     * {@code SEARCH  /_search/order-items?query=:query} : search for the orderItem corresponding
-     * to the query.
-     *
-     * @param query the query of the orderItem search.
-     * @param pageable the pagination information.
-     * @param request a {@link ServerHttpRequest} request.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/order-items")
-    public Mono<ResponseEntity<Flux<OrderItem>>> searchOrderItems(
-        @RequestParam String query,
-        Pageable pageable,
-        ServerHttpRequest request
-    ) {
-        log.debug("REST request to search for a page of OrderItems for query {}", query);
-        return orderItemService
-            .countAll()
-            .map(total -> new PageImpl<>(new ArrayList<>(), pageable, total))
-            .map(page -> PaginationUtil.generatePaginationHttpHeaders(UriComponentsBuilder.fromHttpRequest(request), page))
-            .map(headers -> ResponseEntity.ok().headers(headers).body(orderItemService.search(query, pageable)));
     }
 }

@@ -29,7 +29,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
  * Integration tests for the {@link OrderItemResource} REST controller.
  */
 @IntegrationTest
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_ENTITY_TIMEOUT)
 @WithMockUser
 class OrderItemResourceIT {
 
@@ -44,7 +44,6 @@ class OrderItemResourceIT {
 
     private static final String ENTITY_API_URL = "/api/order-items";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
-    private static final String ENTITY_SEARCH_API_URL = "/api/_search/order-items";
 
     @Autowired
     private OrderItemRepository orderItemRepository;
@@ -300,7 +299,7 @@ class OrderItemResourceIT {
         assertThat(orderItemList).hasSize(databaseSizeBeforeUpdate);
         OrderItem testOrderItem = orderItemList.get(orderItemList.size() - 1);
         assertThat(testOrderItem.getQuantity()).isEqualTo(UPDATED_QUANTITY);
-        assertThat(testOrderItem.getTotalPrice()).isEqualTo(UPDATED_TOTAL_PRICE);
+        assertThat(testOrderItem.getTotalPrice()).isEqualByComparingTo(UPDATED_TOTAL_PRICE);
         assertThat(testOrderItem.getStatus()).isEqualTo(UPDATED_STATUS);
     }
 
@@ -514,33 +513,5 @@ class OrderItemResourceIT {
         SecurityContextHolder.setContext(TestSecurityContextHolder.getContext());
         List<OrderItem> orderItemList = orderItemRepository.findAll().collectList().block();
         assertThat(orderItemList).hasSize(databaseSizeBeforeDelete - 1);
-    }
-
-    @Test
-    void searchOrderItem() {
-        // Initialize the database
-        orderItemRepository.save(orderItem).block();
-
-        // Wait for the orderItem to be indexed
-        TestUtil.retryUntilNotEmpty(() -> orderItemRepository.search("id:" + orderItem.getId()).collectList().block());
-
-        // Search the orderItem
-        webTestClient
-            .get()
-            .uri(ENTITY_SEARCH_API_URL + "?query=id:" + orderItem.getId())
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .expectHeader()
-            .contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.[*].id")
-            .value(hasItem(orderItem.getId()))
-            .jsonPath("$.[*].quantity")
-            .value(hasItem(DEFAULT_QUANTITY))
-            .jsonPath("$.[*].totalPrice")
-            .value(hasItem(sameNumber(DEFAULT_TOTAL_PRICE)))
-            .jsonPath("$.[*].status")
-            .value(hasItem(DEFAULT_STATUS.toString()));
     }
 }

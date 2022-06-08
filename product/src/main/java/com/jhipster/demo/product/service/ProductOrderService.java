@@ -35,6 +35,17 @@ public class ProductOrderService {
     }
 
     /**
+     * Update a productOrder.
+     *
+     * @param productOrder the entity to save.
+     * @return the persisted entity.
+     */
+    public Mono<ProductOrder> update(ProductOrder productOrder) {
+        log.debug("Request to save ProductOrder : {}", productOrder);
+        return productOrderRepository.save(productOrder);
+    }
+
+    /**
      * Partially update a productOrder.
      *
      * @param productOrder the entity to update partially.
@@ -107,17 +118,5 @@ public class ProductOrderService {
     public Mono<Void> delete(String id) {
         log.debug("Request to delete ProductOrder : {}", id);
         return productOrderRepository.deleteById(id);
-    }
-
-    /**
-     * Search for the productOrder corresponding to the query.
-     *
-     * @param query the query of the search.
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    public Flux<ProductOrder> search(String query, Pageable pageable) {
-        log.debug("Request to search for a page of ProductOrders for query {}", query);
-        return productOrderRepository.search(query, pageable);
     }
 }

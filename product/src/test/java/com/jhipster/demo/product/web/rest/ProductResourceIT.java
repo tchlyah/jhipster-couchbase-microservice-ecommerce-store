@@ -28,7 +28,7 @@ import org.springframework.util.Base64Utils;
  * Integration tests for the {@link ProductResource} REST controller.
  */
 @IntegrationTest
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_ENTITY_TIMEOUT)
 @WithMockUser
 class ProductResourceIT {
 
@@ -51,7 +51,6 @@ class ProductResourceIT {
 
     private static final String ENTITY_API_URL = "/api/products";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
-    private static final String ENTITY_SEARCH_API_URL = "/api/_search/products";
 
     @Autowired
     private ProductRepository productRepository;
@@ -325,7 +324,7 @@ class ProductResourceIT {
         Product testProduct = productList.get(productList.size() - 1);
         assertThat(testProduct.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testProduct.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
-        assertThat(testProduct.getPrice()).isEqualTo(UPDATED_PRICE);
+        assertThat(testProduct.getPrice()).isEqualByComparingTo(UPDATED_PRICE);
         assertThat(testProduct.getProductSize()).isEqualTo(UPDATED_PRODUCT_SIZE);
         assertThat(testProduct.getImage()).isEqualTo(UPDATED_IMAGE);
         assertThat(testProduct.getImageContentType()).isEqualTo(UPDATED_IMAGE_CONTENT_TYPE);
@@ -553,39 +552,5 @@ class ProductResourceIT {
         SecurityContextHolder.setContext(TestSecurityContextHolder.getContext());
         List<Product> productList = productRepository.findAll().collectList().block();
         assertThat(productList).hasSize(databaseSizeBeforeDelete - 1);
-    }
-
-    @Test
-    void searchProduct() {
-        // Initialize the database
-        productRepository.save(product).block();
-
-        // Wait for the product to be indexed
-        TestUtil.retryUntilNotEmpty(() -> productRepository.search("id:" + product.getId()).collectList().block());
-
-        // Search the product
-        webTestClient
-            .get()
-            .uri(ENTITY_SEARCH_API_URL + "?query=id:" + product.getId())
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .expectHeader()
-            .contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.[*].id")
-            .value(hasItem(product.getId()))
-            .jsonPath("$.[*].name")
-            .value(hasItem(DEFAULT_NAME))
-            .jsonPath("$.[*].description")
-            .value(hasItem(DEFAULT_DESCRIPTION))
-            .jsonPath("$.[*].price")
-            .value(hasItem(sameNumber(DEFAULT_PRICE)))
-            .jsonPath("$.[*].productSize")
-            .value(hasItem(DEFAULT_PRODUCT_SIZE.toString()))
-            .jsonPath("$.[*].imageContentType")
-            .value(hasItem(DEFAULT_IMAGE_CONTENT_TYPE))
-            .jsonPath("$.[*].image")
-            .value(hasItem(Base64Utils.encodeToString(DEFAULT_IMAGE)));
     }
 }

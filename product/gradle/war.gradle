@@ -1,7 +1,7 @@
 apply plugin: "war"
 
 bootWar {
-    mainClassName = "com.jhipster.demo.product.ProductApp"
+    mainClass = "com.jhipster.demo.product.ProductApp"
     includes = ["WEB-INF/**", "META-INF/**"]
 }
 

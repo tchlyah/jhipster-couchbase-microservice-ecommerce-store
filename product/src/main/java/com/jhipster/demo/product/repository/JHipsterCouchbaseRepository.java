@@ -3,29 +3,20 @@ package com.jhipster.demo.product.repository;
 import static java.lang.String.format;
 
 import com.couchbase.client.java.query.QueryScanConsistency;
-import com.couchbase.client.java.search.SearchQuery;
-import com.couchbase.client.java.search.queries.DocIdQuery;
-import com.couchbase.client.java.search.queries.QueryStringQuery;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.data.couchbase.core.query.Query;
-import org.springframework.data.couchbase.repository.ReactiveCouchbaseRepository;
-import org.springframework.data.couchbase.repository.ScanConsistency;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.couchbase.repository.*;
+import org.springframework.data.domain.*;
 import org.springframework.data.repository.NoRepositoryBean;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * Couchbase specific {@link org.springframework.data.repository.Repository} interface uses N1QL for all requests.
+ * Couchbase specific {@link org.springframework.data.repository.Repository} interface that use KV first approach to optimize requests.
  */
 @NoRepositoryBean
+@ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
 public interface JHipsterCouchbaseRepository<T, ID> extends ReactiveCouchbaseRepository<T, ID> {
-    static String pageableStatement(Pageable pageable) {
-        return pageableStatement(pageable, "");
-    }
+    String FIND_IDS_QUERY = "SELECT meta().id as __id, 0 as __cas FROM #{#n1ql.bucket} WHERE #{#n1ql.filter}";
 
     static String pageableStatement(Pageable pageable, String prefix) {
         Sort sort = Sort.by(
@@ -44,37 +35,40 @@ public interface JHipsterCouchbaseRepository<T, ID> extends ReactiveCouchbaseRep
                 })
                 .collect(Collectors.toList())
         );
-        return new Query().limit(pageable.getPageSize()).skip(pageable.getOffset()).with(sort).export();
+        return new org.springframework.data.couchbase.core.query.Query()
+            .limit(pageable.getPageSize())
+            .skip(pageable.getOffset())
+            .with(sort)
+            .export();
     }
 
-    static SearchQuery searchQuery(String queryString) {
-        List<String> ids = new LinkedList<>();
-        for (String r : queryString.split(" ")) {
-            if (r.indexOf("id:") == 0) {
-                ids.add(r.substring(3));
-                queryString = queryString.replace(r, "").replaceAll("[ ]+", " ").trim();
-            }
-        }
-        QueryStringQuery query = SearchQuery.queryString(queryString);
-        if (ids.size() != 0) {
-            DocIdQuery docIdQuery = SearchQuery.docId(ids.toArray(new String[0]));
-            if (!queryString.isEmpty()) {
-                return SearchQuery.conjuncts(query, docIdQuery);
-            }
-            return docIdQuery;
-        }
-        return query;
+    default Flux<T> findAll() {
+        return findAllById(toIds(findAllIds()));
     }
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    Flux<T> findAll();
+    default Flux<T> findAllBy(Pageable pageable) {
+        return findAllById(toIds(findAllIds(pageable)));
+    }
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    Flux<T> findAll(Sort sort);
+    default Flux<T> findAll(Sort sort) {
+        return findAllById(toIds(findAllIds(sort)));
+    }
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    Flux<T> findAllBy(Pageable pageable);
+    default Mono<Void> deleteAll() {
+        return toIds(findAllIds()).collectList().flatMap(this::deleteAllById);
+    }
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    Mono<Void> deleteAll();
+    @Query(FIND_IDS_QUERY)
+    Flux<T> findAllIds();
+
+    @Query(FIND_IDS_QUERY)
+    Flux<T> findAllIds(Pageable pageable);
+
+    @Query(FIND_IDS_QUERY)
+    Flux<T> findAllIds(Sort sort);
+
+    @SuppressWarnings("unchecked")
+    default Flux<ID> toIds(Flux<T> entities) {
+        return entities.mapNotNull(entity -> (ID) getEntityInformation().getId(entity));
+    }
 }

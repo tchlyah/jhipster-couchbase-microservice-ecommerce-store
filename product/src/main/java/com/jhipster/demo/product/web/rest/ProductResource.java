@@ -113,7 +113,7 @@ public class ProductResource {
                 }
 
                 return productService
-                    .save(product)
+                    .update(product)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                     .map(result ->
                         ResponseEntity
@@ -176,13 +176,16 @@ public class ProductResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of products in body.
      */
     @GetMapping("/products")
-    public Mono<ResponseEntity<List<Product>>> getAllProducts(Pageable pageable, ServerHttpRequest request) {
+    public Mono<ResponseEntity<List<Product>>> getAllProducts(
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable,
+        ServerHttpRequest request
+    ) {
         log.debug("REST request to get a page of Products");
         return productService
             .countAll()
             .zipWith(productService.findAll(pageable).collectList())
-            .map(countWithEntities -> {
-                return ResponseEntity
+            .map(countWithEntities ->
+                ResponseEntity
                     .ok()
                     .headers(
                         PaginationUtil.generatePaginationHttpHeaders(
@@ -190,8 +193,8 @@ public class ProductResource {
                             new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
                         )
                     )
-                    .body(countWithEntities.getT2());
-            });
+                    .body(countWithEntities.getT2())
+            );
     }
 
     /**
@@ -224,24 +227,5 @@ public class ProductResource {
                     ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build()
                 )
             );
-    }
-
-    /**
-     * {@code SEARCH  /_search/products?query=:query} : search for the product corresponding
-     * to the query.
-     *
-     * @param query the query of the product search.
-     * @param pageable the pagination information.
-     * @param request a {@link ServerHttpRequest} request.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/products")
-    public Mono<ResponseEntity<Flux<Product>>> searchProducts(@RequestParam String query, Pageable pageable, ServerHttpRequest request) {
-        log.debug("REST request to search for a page of Products for query {}", query);
-        return productService
-            .countAll()
-            .map(total -> new PageImpl<>(new ArrayList<>(), pageable, total))
-            .map(page -> PaginationUtil.generatePaginationHttpHeaders(UriComponentsBuilder.fromHttpRequest(request), page))
-            .map(headers -> ResponseEntity.ok().headers(headers).body(productService.search(query, pageable)));
     }
 }
