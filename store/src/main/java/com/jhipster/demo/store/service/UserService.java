@@ -261,7 +261,7 @@ public class UserService {
     }
 
     public Flux<AdminUserDTO> getAllManagedUsers(Pageable pageable) {
-        return userRepository.findAllByIdNotNull(pageable).map(AdminUserDTO::new);
+        return userRepository.findAllBy(pageable).map(AdminUserDTO::new);
     }
 
     public Flux<UserDTO> getAllPublicUsers(Pageable pageable) {

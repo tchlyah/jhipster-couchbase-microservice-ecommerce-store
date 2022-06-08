@@ -29,7 +29,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 /**
  * Integration tests for the {@link UserResource} REST controller.
  */
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_TIMEOUT)
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 @IntegrationTest
 class UserResourceIT {
@@ -37,7 +37,7 @@ class UserResourceIT {
     private static final String DEFAULT_LOGIN = "johndoe";
     private static final String UPDATED_LOGIN = "jhipster";
 
-    private static final String DEFAULT_ID = User.PREFIX + DEFAULT_LOGIN;
+    private static final String DEFAULT_ID = DEFAULT_LOGIN;
 
     private static final String DEFAULT_PASSWORD = "passjohndoe";
     private static final String UPDATED_PASSWORD = "passjhipster";
@@ -239,7 +239,7 @@ class UserResourceIT {
         // Get all the users
         AdminUserDTO foundUser = webTestClient
             .get()
-            .uri("/api/admin/users?sort=id,DESC")
+            .uri("/api/admin/users?sort=id,desc")
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus()

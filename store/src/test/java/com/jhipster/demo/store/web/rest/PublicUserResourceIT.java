@@ -22,7 +22,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 /**
  * Integration tests for the {@link UserResource} REST controller.
  */
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_TIMEOUT)
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 @IntegrationTest
 class PublicUserResourceIT {
@@ -50,7 +50,7 @@ class PublicUserResourceIT {
         // Get all the users
         UserDTO foundUser = webTestClient
             .get()
-            .uri("/api/users?sort=id,DESC")
+            .uri("/api/users?sort=id,desc")
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus()

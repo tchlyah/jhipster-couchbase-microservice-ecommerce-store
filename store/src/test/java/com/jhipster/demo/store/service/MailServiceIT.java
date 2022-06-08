@@ -66,7 +66,7 @@ class MailServiceIT {
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         doNothing().when(javaMailSender).send(any(MimeMessage.class));
         mailService = new MailService(jHipsterProperties, javaMailSender, messageSource, templateEngine);
     }
@@ -134,9 +134,9 @@ class MailServiceIT {
     @Test
     void testSendEmailFromTemplate() throws Exception {
         User user = new User();
+        user.setLangKey(Constants.DEFAULT_LANGUAGE);
         user.setLogin("john");
         user.setEmail("john.doe@example.com");
-        user.setLangKey("en");
         mailService.sendEmailFromTemplate(user, "mail/testEmail", "email.test.title");
         verify(javaMailSender).send(messageCaptor.capture());
         MimeMessage message = messageCaptor.getValue();

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { Translate } from 'react-jhipster';
@@ -8,22 +8,25 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity, deleteEntity } from './product.reducer';
 
 export const ProductDeleteDialog = (props: RouteComponentProps<{ id: string }>) => {
+  const [loadModal, setLoadModal] = useState(false);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(getEntity(props.match.params.id));
+    setLoadModal(true);
   }, []);
 
-  const productEntity = useAppSelector(state => state.product.entity);
-  const updateSuccess = useAppSelector(state => state.product.updateSuccess);
+  const productEntity = useAppSelector(state => state.store.product.entity);
+  const updateSuccess = useAppSelector(state => state.store.product.updateSuccess);
 
   const handleClose = () => {
     props.history.push('/product' + props.location.search);
   };
 
   useEffect(() => {
-    if (updateSuccess) {
+    if (updateSuccess && loadModal) {
       handleClose();
+      setLoadModal(false);
     }
   }, [updateSuccess]);
 

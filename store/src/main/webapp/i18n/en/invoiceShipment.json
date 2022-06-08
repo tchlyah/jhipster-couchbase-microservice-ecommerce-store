@@ -6,7 +6,6 @@
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Shipment",
         "createOrEditLabel": "Create or edit a Shipment",
-        "search": "Search for Shipment",
         "notFound": "No Shipments found"
       },
       "delete": {

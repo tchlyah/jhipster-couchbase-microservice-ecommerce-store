@@ -4,13 +4,15 @@ import { Button, Row, Col, FormText } from 'reactstrap';
 import { isNumber, Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { IUser } from 'app/shared/model/user.model';
-import { getUsers } from 'app/modules/administration/user-management/user-management.reducer';
-import { getEntity, updateEntity, createEntity, reset } from './customer.reducer';
-import { ICustomer } from 'app/shared/model/customer.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
 import { mapIdList } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+
+import { IUser } from 'app/shared/model/user.model';
+import { getUsers } from 'app/modules/administration/user-management/user-management.reducer';
+import { ICustomer } from 'app/shared/model/customer.model';
+import { Gender } from 'app/shared/model/enumerations/gender.model';
+import { getEntity, updateEntity, createEntity, reset } from './customer.reducer';
 
 export const CustomerUpdate = (props: RouteComponentProps<{ id: string }>) => {
   const dispatch = useAppDispatch();
@@ -18,11 +20,11 @@ export const CustomerUpdate = (props: RouteComponentProps<{ id: string }>) => {
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
   const users = useAppSelector(state => state.userManagement.users);
-  const customerEntity = useAppSelector(state => state.customer.entity);
-  const loading = useAppSelector(state => state.customer.loading);
-  const updating = useAppSelector(state => state.customer.updating);
-  const updateSuccess = useAppSelector(state => state.customer.updateSuccess);
-
+  const customerEntity = useAppSelector(state => state.store.customer.entity);
+  const loading = useAppSelector(state => state.store.customer.loading);
+  const updating = useAppSelector(state => state.store.customer.updating);
+  const updateSuccess = useAppSelector(state => state.store.customer.updateSuccess);
+  const genderValues = Object.keys(Gender);
   const handleClose = () => {
     props.history.push('/customer' + props.location.search);
   };
@@ -47,7 +49,7 @@ export const CustomerUpdate = (props: RouteComponentProps<{ id: string }>) => {
     const entity = {
       ...customerEntity,
       ...values,
-      user: users.find(it => it.id.toString() === values.userId.toString()),
+      user: users.find(it => it.id.toString() === values.user.toString()),
     };
 
     if (isNew) {
@@ -63,7 +65,7 @@ export const CustomerUpdate = (props: RouteComponentProps<{ id: string }>) => {
       : {
           gender: 'MALE',
           ...customerEntity,
-          userId: customerEntity?.user?.id,
+          user: customerEntity?.user?.id,
         };
 
   return (
@@ -118,9 +120,11 @@ export const CustomerUpdate = (props: RouteComponentProps<{ id: string }>) => {
                 data-cy="gender"
                 type="select"
               >
-                <option value="MALE">{translate('storeApp.Gender.MALE')}</option>
-                <option value="FEMALE">{translate('storeApp.Gender.FEMALE')}</option>
-                <option value="OTHER">{translate('storeApp.Gender.OTHER')}</option>
+                {genderValues.map(gender => (
+                  <option value={gender} key={gender}>
+                    {translate('storeApp.Gender.' + gender)}
+                  </option>
+                ))}
               </ValidatedField>
               <ValidatedField
                 label={translate('storeApp.customer.email')}
@@ -185,7 +189,7 @@ export const CustomerUpdate = (props: RouteComponentProps<{ id: string }>) => {
               />
               <ValidatedField
                 id="customer-user"
-                name="userId"
+                name="user"
                 data-cy="user"
                 label={translate('storeApp.customer.user')}
                 type="select"

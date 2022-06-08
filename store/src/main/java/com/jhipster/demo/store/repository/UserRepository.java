@@ -1,15 +1,9 @@
 package com.jhipster.demo.store.repository;
 
-import static com.jhipster.demo.store.config.Constants.ID_DELIMITER;
-import static com.jhipster.demo.store.repository.JHipsterCouchbaseRepository.pageableStatement;
-import static com.jhipster.demo.store.repository.JHipsterCouchbaseRepository.searchQuery;
-
-import com.couchbase.client.java.query.QueryScanConsistency;
 import com.jhipster.demo.store.domain.User;
 import java.time.Instant;
 import org.springframework.data.couchbase.repository.Query;
-import org.springframework.data.couchbase.repository.ScanConsistency;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,45 +12,45 @@ import reactor.core.publisher.Mono;
  * Spring Data Couchbase repository for the {@link User} entity.
  */
 @Repository
-public interface UserRepository extends JHipsterCouchbaseRepository<User, String> {
-    // @ScanConsistency is to fix index issues with Spring Data Couchbase
-    // https://github.com/spring-projects/spring-data-couchbase/issues/897
+public interface UserRepository extends JHipsterCouchbaseRepository<User, String>, CouchbaseSearchRepository<User, String> {
+    default Mono<User> findOneByActivationKey(String activationKey) {
+        return findIdByActivationKey(activationKey).map(User::getId).flatMap(this::findById);
+    }
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    Mono<User> findOneByActivationKey(String activationKey);
+    @Query(FIND_IDS_QUERY + " AND activationKey = $1")
+    Mono<User> findIdByActivationKey(String activationKey);
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    Flux<User> findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime);
+    default Flux<User> findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime) {
+        return findAllById(toIds(findAllIdsByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(dateTime)));
+    }
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    Mono<User> findOneByResetKey(String resetKey);
+    @Query(FIND_IDS_QUERY + " AND activated = false AND activationKey IS NOT NULL AND createdDate < $1")
+    Flux<User> findAllIdsByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime);
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    @Query("#{#n1ql.selectEntity} WHERE LOWER(email) = LOWER($1) AND #{#n1ql.filter}")
-    Mono<User> findOneByEmailIgnoreCase(String email);
+    default Mono<User> findOneByResetKey(String resetKey) {
+        return findIdByResetKey(resetKey).map(User::getId).flatMap(this::findById);
+    }
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
+    @Query(FIND_IDS_QUERY + " AND resetKey = $1")
+    Mono<User> findIdByResetKey(String resetKey);
+
+    default Mono<User> findOneByEmailIgnoreCase(String email) {
+        return findIdByEmailIgnoreCase(email).map(User::getId).flatMap(this::findById);
+    }
+
+    @Query(FIND_IDS_QUERY + " AND LOWER(email) = LOWER($1)")
+    Mono<User> findIdByEmailIgnoreCase(String email);
+
     default Mono<User> findOneByLogin(String login) {
-        return findById(User.PREFIX + ID_DELIMITER + login);
+        return findById(login);
     }
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    Flux<User> findAllByIdNotNull(Pageable pageable);
+    default Flux<User> findAllByActivatedIsTrue(Pageable pageable) {
+        return findAllById(toIds(findAllIdsByActivatedIsTrue(pageable)));
+    }
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    Flux<User> findAllByActivatedIsTrue(Pageable pageable);
+    @Query(FIND_IDS_QUERY + " AND activated = true")
+    Flux<User> findAllIdsByActivatedIsTrue(Pageable pageable);
 
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
     Mono<Long> count();
-
-    @Query("#{#n1ql.selectEntity} WHERE #{#n1ql.filter} AND SEARCH(#{n1ql.bucket}, #{[0]) #{[1]}")
-    Flux<User> search(String queryString, String pageableStatement);
-
-    default Flux<User> search(String queryString) {
-        return search(searchQuery(queryString).toString(), "");
-    }
-
-    default Flux<User> search(String queryString, Pageable pageable) {
-        return search(searchQuery(queryString).toString(), pageableStatement(pageable));
-    }
 }

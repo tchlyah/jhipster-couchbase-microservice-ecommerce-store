@@ -1,77 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { Button, Input, InputGroup, FormGroup, Form, Col, Row, Table } from 'reactstrap';
-import { Translate, translate, TextFormat, getSortState, JhiPagination, JhiItemCount } from 'react-jhipster';
+import { Button, Table } from 'reactstrap';
+import { Translate, TextFormat, getSortState, JhiPagination, JhiItemCount } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { searchEntities, getEntities } from './shipment.reducer';
-import { IShipment } from 'app/shared/model/invoice/shipment.model';
 import { APP_DATE_FORMAT, APP_LOCAL_DATE_FORMAT } from 'app/config/constants';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
+import { IShipment } from 'app/shared/model/invoice/shipment.model';
+import { getEntities } from './shipment.reducer';
+
 export const Shipment = (props: RouteComponentProps<{ url: string }>) => {
   const dispatch = useAppDispatch();
 
-  const [search, setSearch] = useState('');
   const [paginationState, setPaginationState] = useState(
     overridePaginationStateWithQueryParams(getSortState(props.location, ITEMS_PER_PAGE, 'id'), props.location.search)
   );
 
-  const shipmentList = useAppSelector(state => state.shipment.entities);
-  const loading = useAppSelector(state => state.shipment.loading);
-  const totalItems = useAppSelector(state => state.shipment.totalItems);
+  const shipmentList = useAppSelector(state => state.store.shipment.entities);
+  const loading = useAppSelector(state => state.store.shipment.loading);
+  const totalItems = useAppSelector(state => state.store.shipment.totalItems);
 
   const getAllEntities = () => {
-    if (search) {
-      dispatch(
-        searchEntities({
-          query: search,
-          page: paginationState.activePage - 1,
-          size: paginationState.itemsPerPage,
-          sort: `${paginationState.sort},${paginationState.order}`,
-        })
-      );
-    } else {
-      dispatch(
-        getEntities({
-          page: paginationState.activePage - 1,
-          size: paginationState.itemsPerPage,
-          sort: `${paginationState.sort},${paginationState.order}`,
-        })
-      );
-    }
+    dispatch(
+      getEntities({
+        page: paginationState.activePage - 1,
+        size: paginationState.itemsPerPage,
+        sort: `${paginationState.sort},${paginationState.order}`,
+      })
+    );
   };
-
-  const startSearching = e => {
-    if (search) {
-      setPaginationState({
-        ...paginationState,
-        activePage: 1,
-      });
-      dispatch(
-        searchEntities({
-          query: search,
-          page: paginationState.activePage - 1,
-          size: paginationState.itemsPerPage,
-          sort: `${paginationState.sort},${paginationState.order}`,
-        })
-      );
-    }
-    e.preventDefault();
-  };
-
-  const clear = () => {
-    setSearch('');
-    setPaginationState({
-      ...paginationState,
-      activePage: 1,
-    });
-    dispatch(getEntities({}));
-  };
-
-  const handleSearch = event => setSearch(event.target.value);
 
   const sortEntities = () => {
     getAllEntities();
@@ -83,7 +43,7 @@ export const Shipment = (props: RouteComponentProps<{ url: string }>) => {
 
   useEffect(() => {
     sortEntities();
-  }, [paginationState.activePage, paginationState.order, paginationState.sort, search]);
+  }, [paginationState.activePage, paginationState.order, paginationState.sort]);
 
   useEffect(() => {
     const params = new URLSearchParams(props.location.search);
@@ -125,40 +85,17 @@ export const Shipment = (props: RouteComponentProps<{ url: string }>) => {
       <h2 id="shipment-heading" data-cy="ShipmentHeading">
         <Translate contentKey="storeApp.invoiceShipment.home.title">Shipments</Translate>
         <div className="d-flex justify-content-end">
-          <Button className="mr-2" color="info" onClick={handleSyncList} disabled={loading}>
+          <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
             <FontAwesomeIcon icon="sync" spin={loading} />{' '}
             <Translate contentKey="storeApp.invoiceShipment.home.refreshListLabel">Refresh List</Translate>
           </Button>
-          <Link to={`${match.url}/new`} className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
+          <Link to="/shipment/new" className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
             <FontAwesomeIcon icon="plus" />
             &nbsp;
             <Translate contentKey="storeApp.invoiceShipment.home.createLabel">Create new Shipment</Translate>
           </Link>
         </div>
       </h2>
-      <Row>
-        <Col sm="12">
-          <Form onSubmit={startSearching}>
-            <FormGroup>
-              <InputGroup>
-                <Input
-                  type="text"
-                  name="search"
-                  defaultValue={search}
-                  onChange={handleSearch}
-                  placeholder={translate('storeApp.invoiceShipment.home.search')}
-                />
-                <Button className="input-group-addon">
-                  <FontAwesomeIcon icon="search" />
-                </Button>
-                <Button type="reset" className="input-group-addon" onClick={clear}>
-                  <FontAwesomeIcon icon="trash" />
-                </Button>
-              </InputGroup>
-            </FormGroup>
-          </Form>
-        </Col>
-      </Row>
       <div className="table-responsive">
         {shipmentList && shipmentList.length > 0 ? (
           <Table responsive>
@@ -186,17 +123,17 @@ export const Shipment = (props: RouteComponentProps<{ url: string }>) => {
               {shipmentList.map((shipment, i) => (
                 <tr key={`entity-${i}`} data-cy="entityTable">
                   <td>
-                    <Button tag={Link} to={`${match.url}/${shipment.id}`} color="link" size="sm">
+                    <Button tag={Link} to={`/shipment/${shipment.id}`} color="link" size="sm">
                       {shipment.id}
                     </Button>
                   </td>
                   <td>{shipment.trackingCode}</td>
                   <td>{shipment.date ? <TextFormat type="date" value={shipment.date} format={APP_DATE_FORMAT} /> : null}</td>
                   <td>{shipment.details}</td>
-                  <td>{shipment.invoice ? <Link to={`invoice/${shipment.invoice.id}`}>{shipment.invoice.code}</Link> : ''}</td>
-                  <td className="text-right">
+                  <td>{shipment.invoice ? <Link to={`/invoice/${shipment.invoice.id}`}>{shipment.invoice.code}</Link> : ''}</td>
+                  <td className="text-end">
                     <div className="btn-group flex-btn-group-container">
-                      <Button tag={Link} to={`${match.url}/${shipment.id}`} color="info" size="sm" data-cy="entityDetailsButton">
+                      <Button tag={Link} to={`/shipment/${shipment.id}`} color="info" size="sm" data-cy="entityDetailsButton">
                         <FontAwesomeIcon icon="eye" />{' '}
                         <span className="d-none d-md-inline">
                           <Translate contentKey="entity.action.view">View</Translate>
@@ -204,7 +141,7 @@ export const Shipment = (props: RouteComponentProps<{ url: string }>) => {
                       </Button>
                       <Button
                         tag={Link}
-                        to={`${match.url}/${shipment.id}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                        to={`/shipment/${shipment.id}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
                         color="primary"
                         size="sm"
                         data-cy="entityEditButton"
@@ -216,7 +153,7 @@ export const Shipment = (props: RouteComponentProps<{ url: string }>) => {
                       </Button>
                       <Button
                         tag={Link}
-                        to={`${match.url}/${shipment.id}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                        to={`/shipment/${shipment.id}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
                         color="danger"
                         size="sm"
                         data-cy="entityDeleteButton"
@@ -242,10 +179,10 @@ export const Shipment = (props: RouteComponentProps<{ url: string }>) => {
       </div>
       {totalItems ? (
         <div className={shipmentList && shipmentList.length > 0 ? '' : 'd-none'}>
-          <Row className="justify-content-center">
+          <div className="justify-content-center d-flex">
             <JhiItemCount page={paginationState.activePage} total={totalItems} itemsPerPage={paginationState.itemsPerPage} i18nEnabled />
-          </Row>
-          <Row className="justify-content-center">
+          </div>
+          <div className="justify-content-center d-flex">
             <JhiPagination
               activePage={paginationState.activePage}
               onSelect={handlePagination}
@@ -253,7 +190,7 @@ export const Shipment = (props: RouteComponentProps<{ url: string }>) => {
               itemsPerPage={paginationState.itemsPerPage}
               totalItems={totalItems}
             />
-          </Row>
+          </div>
         </div>
       ) : (
         ''

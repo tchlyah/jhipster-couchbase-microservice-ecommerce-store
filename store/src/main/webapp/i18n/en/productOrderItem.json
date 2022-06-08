@@ -6,7 +6,6 @@
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Order Item",
         "createOrEditLabel": "Create or edit a Order Item",
-        "search": "Search for Order Item",
         "notFound": "No Order Items found"
       },
       "delete": {

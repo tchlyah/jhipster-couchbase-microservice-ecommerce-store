@@ -78,17 +78,46 @@ export const classInvalid = 'is-invalid';
 
 export const classValid = 'is-valid';
 
+Cypress.Commands.add('authenticatedRequest', (data: any) => {
+  const bearerToken = JSON.parse(sessionStorage.getItem(Cypress.env('jwtStorageName')));
+  return cy.request({
+    ...data,
+    auth: {
+      bearer: bearerToken,
+    },
+  });
+});
+
 Cypress.Commands.add('login', (username: string, password: string) => {
-  cy.clickOnLoginItem();
-  cy.get(usernameLoginSelector).type(username);
-  cy.get(passwordLoginSelector).type(password);
-  cy.get(submitLoginSelector).click();
+  cy.session(
+    [username, password],
+    () => {
+      cy.request({
+        method: 'GET',
+        url: '/api/account',
+        failOnStatusCode: false,
+      });
+      cy.authenticatedRequest({
+        method: 'POST',
+        body: { username, password },
+        url: Cypress.env('authenticationUrl'),
+      }).then(({ body: { id_token } }) => {
+        sessionStorage.setItem(Cypress.env('jwtStorageName'), JSON.stringify(id_token));
+      });
+    },
+    {
+      validate() {
+        cy.authenticatedRequest({ url: '/api/account' }).its('status').should('eq', 200);
+      },
+    }
+  );
 });
 
 declare global {
   namespace Cypress {
-    interface Chainable<Subject> {
+    interface Chainable {
       login(username: string, password: string): Cypress.Chainable;
+      authenticatedRequest(data: any): Cypress.Chainable;
     }
   }
 }

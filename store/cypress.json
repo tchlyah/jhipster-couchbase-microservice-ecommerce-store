@@ -8,7 +8,13 @@
   "pluginsFile": "src/test/javascript/cypress/plugins/index.ts",
   "screenshotsFolder": "build/cypress/screenshots",
   "chromeWebSecurity": true,
+  "scrollBehavior": "center",
   "viewportWidth": 1200,
   "viewportHeight": 720,
-  "retries": 2
+  "retries": 2,
+  "env": {
+    "authenticationUrl": "/api/authenticate",
+    "jwtStorageName": "jhi-authenticationToken"
+  },
+  "experimentalSessionSupport": true
 }

@@ -15,14 +15,8 @@ const initialState: EntityState<INotification> = {
 };
 
 const apiUrl = 'services/notification/api/notifications';
-const apiSearchUrl = 'services/notification/api/_search/notifications';
 
 // Actions
-
-export const searchEntities = createAsyncThunk('notification/search_entity', async ({ query, page, size, sort }: IQueryParams) => {
-  const requestUrl = `${apiSearchUrl}?query=${query}`;
-  return axios.get<INotification[]>(requestUrl);
-});
 
 export const getEntities = createAsyncThunk('notification/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
   const requestUrl = `${apiUrl}?cacheBuster=${new Date().getTime()}`;
@@ -95,11 +89,13 @@ export const NotificationSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = {};
       })
-      .addMatcher(isFulfilled(getEntities, searchEntities), (state, action) => {
+      .addMatcher(isFulfilled(getEntities), (state, action) => {
+        const { data } = action.payload;
+
         return {
           ...state,
           loading: false,
-          entities: action.payload.data,
+          entities: data,
         };
       })
       .addMatcher(isFulfilled(createEntity, updateEntity, partialUpdateEntity), (state, action) => {
@@ -108,7 +104,7 @@ export const NotificationSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = action.payload.data;
       })
-      .addMatcher(isPending(getEntities, getEntity, searchEntities), state => {
+      .addMatcher(isPending(getEntities, getEntity), state => {
         state.errorMessage = null;
         state.updateSuccess = false;
         state.loading = true;

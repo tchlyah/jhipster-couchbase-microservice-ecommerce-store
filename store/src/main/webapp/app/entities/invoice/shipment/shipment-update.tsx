@@ -4,25 +4,25 @@ import { Button, Row, Col, FormText } from 'reactstrap';
 import { isNumber, Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { IInvoice } from 'app/shared/model/invoice/invoice.model';
-import { getEntities as getInvoices } from 'app/entities/invoice/invoice/invoice.reducer';
-import { getEntity, updateEntity, createEntity, reset } from './shipment.reducer';
-import { IShipment } from 'app/shared/model/invoice/shipment.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
 import { mapIdList } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+
+import { IInvoice } from 'app/shared/model/invoice/invoice.model';
+import { getEntities as getInvoices } from 'app/entities/invoice/invoice/invoice.reducer';
+import { IShipment } from 'app/shared/model/invoice/shipment.model';
+import { getEntity, updateEntity, createEntity, reset } from './shipment.reducer';
 
 export const ShipmentUpdate = (props: RouteComponentProps<{ id: string }>) => {
   const dispatch = useAppDispatch();
 
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
-  const invoices = useAppSelector(state => state.invoice.entities);
-  const shipmentEntity = useAppSelector(state => state.shipment.entity);
-  const loading = useAppSelector(state => state.shipment.loading);
-  const updating = useAppSelector(state => state.shipment.updating);
-  const updateSuccess = useAppSelector(state => state.shipment.updateSuccess);
-
+  const invoices = useAppSelector(state => state.store.invoice.entities);
+  const shipmentEntity = useAppSelector(state => state.store.shipment.entity);
+  const loading = useAppSelector(state => state.store.shipment.loading);
+  const updating = useAppSelector(state => state.store.shipment.updating);
+  const updateSuccess = useAppSelector(state => state.store.shipment.updateSuccess);
   const handleClose = () => {
     props.history.push('/shipment' + props.location.search);
   };
@@ -49,7 +49,7 @@ export const ShipmentUpdate = (props: RouteComponentProps<{ id: string }>) => {
     const entity = {
       ...shipmentEntity,
       ...values,
-      invoice: invoices.find(it => it.id.toString() === values.invoiceId.toString()),
+      invoice: invoices.find(it => it.id.toString() === values.invoice.toString()),
     };
 
     if (isNew) {
@@ -67,7 +67,7 @@ export const ShipmentUpdate = (props: RouteComponentProps<{ id: string }>) => {
       : {
           ...shipmentEntity,
           date: convertDateTimeFromServer(shipmentEntity.date),
-          invoiceId: shipmentEntity?.invoice?.id,
+          invoice: shipmentEntity?.invoice?.id,
         };
 
   return (
@@ -122,7 +122,7 @@ export const ShipmentUpdate = (props: RouteComponentProps<{ id: string }>) => {
               />
               <ValidatedField
                 id="shipment-invoice"
-                name="invoiceId"
+                name="invoice"
                 data-cy="invoice"
                 label={translate('storeApp.invoiceShipment.invoice')}
                 type="select"

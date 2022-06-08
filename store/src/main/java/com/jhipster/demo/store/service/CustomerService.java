@@ -35,6 +35,17 @@ public class CustomerService {
     }
 
     /**
+     * Update a customer.
+     *
+     * @param customer the entity to save.
+     * @return the persisted entity.
+     */
+    public Mono<Customer> update(Customer customer) {
+        log.debug("Request to save Customer : {}", customer);
+        return customerRepository.save(customer);
+    }
+
+    /**
      * Partially update a customer.
      *
      * @param customer the entity to update partially.

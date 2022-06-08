@@ -4,22 +4,24 @@ import { Button, Row, Col, FormText } from 'reactstrap';
 import { isNumber, Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { getEntity, updateEntity, createEntity, reset } from './product-order.reducer';
-import { IProductOrder } from 'app/shared/model/product/product-order.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
 import { mapIdList } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+
+import { IProductOrder } from 'app/shared/model/product/product-order.model';
+import { OrderStatus } from 'app/shared/model/enumerations/order-status.model';
+import { getEntity, updateEntity, createEntity, reset } from './product-order.reducer';
 
 export const ProductOrderUpdate = (props: RouteComponentProps<{ id: string }>) => {
   const dispatch = useAppDispatch();
 
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
-  const productOrderEntity = useAppSelector(state => state.productOrder.entity);
-  const loading = useAppSelector(state => state.productOrder.loading);
-  const updating = useAppSelector(state => state.productOrder.updating);
-  const updateSuccess = useAppSelector(state => state.productOrder.updateSuccess);
-
+  const productOrderEntity = useAppSelector(state => state.store.productOrder.entity);
+  const loading = useAppSelector(state => state.store.productOrder.loading);
+  const updating = useAppSelector(state => state.store.productOrder.updating);
+  const updateSuccess = useAppSelector(state => state.store.productOrder.updateSuccess);
+  const orderStatusValues = Object.keys(OrderStatus);
   const handleClose = () => {
     props.history.push('/product-order' + props.location.search);
   };
@@ -107,9 +109,11 @@ export const ProductOrderUpdate = (props: RouteComponentProps<{ id: string }>) =
                 data-cy="status"
                 type="select"
               >
-                <option value="COMPLETED">{translate('storeApp.OrderStatus.COMPLETED')}</option>
-                <option value="PENDING">{translate('storeApp.OrderStatus.PENDING')}</option>
-                <option value="CANCELLED">{translate('storeApp.OrderStatus.CANCELLED')}</option>
+                {orderStatusValues.map(orderStatus => (
+                  <option value={orderStatus} key={orderStatus}>
+                    {translate('storeApp.OrderStatus.' + orderStatus)}
+                  </option>
+                ))}
               </ValidatedField>
               <ValidatedField
                 label={translate('storeApp.productProductOrder.code')}
