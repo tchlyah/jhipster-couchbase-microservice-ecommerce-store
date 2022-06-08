@@ -26,6 +26,7 @@ spring:
   cloud:
     config:
       enabled: false
+
   jackson:
     serialization:
       write-durations-as-timestamps: false
@@ -37,6 +38,9 @@ spring:
     host: localhost
   main:
     allow-bean-definition-overriding: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   messages:
     basename: i18n/messages
   task:
@@ -49,7 +53,7 @@ spring:
     scheduling:
       thread-name-prefix: notification-scheduling-
       pool:
-        size: 1
+        size: 20
   thymeleaf:
     mode: HTML
 
@@ -62,7 +66,6 @@ server:
 #
 # Full reference is available at: https://www.jhipster.tech/common-application-properties/
 # ===================================================================
-
 jhipster:
   clientApp:
     name: 'notificationApp'
