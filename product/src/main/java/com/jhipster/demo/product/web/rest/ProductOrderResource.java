@@ -113,7 +113,7 @@ public class ProductOrderResource {
                 }
 
                 return productOrderService
-                    .save(productOrder)
+                    .update(productOrder)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                     .map(result ->
                         ResponseEntity
@@ -176,13 +176,16 @@ public class ProductOrderResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of productOrders in body.
      */
     @GetMapping("/product-orders")
-    public Mono<ResponseEntity<List<ProductOrder>>> getAllProductOrders(Pageable pageable, ServerHttpRequest request) {
+    public Mono<ResponseEntity<List<ProductOrder>>> getAllProductOrders(
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable,
+        ServerHttpRequest request
+    ) {
         log.debug("REST request to get a page of ProductOrders");
         return productOrderService
             .countAll()
             .zipWith(productOrderService.findAll(pageable).collectList())
-            .map(countWithEntities -> {
-                return ResponseEntity
+            .map(countWithEntities ->
+                ResponseEntity
                     .ok()
                     .headers(
                         PaginationUtil.generatePaginationHttpHeaders(
@@ -190,8 +193,8 @@ public class ProductOrderResource {
                             new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
                         )
                     )
-                    .body(countWithEntities.getT2());
-            });
+                    .body(countWithEntities.getT2())
+            );
     }
 
     /**
@@ -224,28 +227,5 @@ public class ProductOrderResource {
                     ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build()
                 )
             );
-    }
-
-    /**
-     * {@code SEARCH  /_search/product-orders?query=:query} : search for the productOrder corresponding
-     * to the query.
-     *
-     * @param query the query of the productOrder search.
-     * @param pageable the pagination information.
-     * @param request a {@link ServerHttpRequest} request.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/product-orders")
-    public Mono<ResponseEntity<Flux<ProductOrder>>> searchProductOrders(
-        @RequestParam String query,
-        Pageable pageable,
-        ServerHttpRequest request
-    ) {
-        log.debug("REST request to search for a page of ProductOrders for query {}", query);
-        return productOrderService
-            .countAll()
-            .map(total -> new PageImpl<>(new ArrayList<>(), pageable, total))
-            .map(page -> PaginationUtil.generatePaginationHttpHeaders(UriComponentsBuilder.fromHttpRequest(request), page))
-            .map(headers -> ResponseEntity.ok().headers(headers).body(productOrderService.search(query, pageable)));
     }
 }

@@ -2,9 +2,11 @@ package com.jhipster.demo.product.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.jhipster.demo.product.management.SecurityMetersService;
 import com.jhipster.demo.product.security.AuthoritiesConstants;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +31,10 @@ class JWTFilterTest {
         JHipsterProperties jHipsterProperties = new JHipsterProperties();
         String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8";
         jHipsterProperties.getSecurity().getAuthentication().getJwt().setBase64Secret(base64Secret);
-        tokenProvider = new TokenProvider(jHipsterProperties);
+
+        SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
+
+        tokenProvider = new TokenProvider(jHipsterProperties, securityMetersService);
         ReflectionTestUtils.setField(tokenProvider, "key", Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret)));
 
         ReflectionTestUtils.setField(tokenProvider, "tokenValidityInMilliseconds", 60000);
@@ -53,7 +58,7 @@ class JWTFilterTest {
                 exchange,
                 it ->
                     Mono
-                        .subscriberContext()
+                        .deferContextual(Mono::just)
                         .flatMap(c -> ReactiveSecurityContextHolder.getContext())
                         .map(SecurityContext::getAuthentication)
                         .doOnSuccess(auth -> assertThat(auth.getName()).isEqualTo("test-user"))
@@ -75,7 +80,7 @@ class JWTFilterTest {
                 exchange,
                 it ->
                     Mono
-                        .subscriberContext()
+                        .deferContextual(Mono::just)
                         .flatMap(c -> ReactiveSecurityContextHolder.getContext())
                         .map(SecurityContext::getAuthentication)
                         .doOnSuccess(auth -> assertThat(auth).isNull())
@@ -93,7 +98,7 @@ class JWTFilterTest {
                 exchange,
                 it ->
                     Mono
-                        .subscriberContext()
+                        .deferContextual(Mono::just)
                         .flatMap(c -> ReactiveSecurityContextHolder.getContext())
                         .map(SecurityContext::getAuthentication)
                         .doOnSuccess(auth -> assertThat(auth).isNull())
@@ -113,7 +118,7 @@ class JWTFilterTest {
                 exchange,
                 it ->
                     Mono
-                        .subscriberContext()
+                        .deferContextual(Mono::just)
                         .flatMap(c -> ReactiveSecurityContextHolder.getContext())
                         .map(SecurityContext::getAuthentication)
                         .doOnSuccess(auth -> assertThat(auth).isNull())
@@ -139,7 +144,7 @@ class JWTFilterTest {
                 exchange,
                 it ->
                     Mono
-                        .subscriberContext()
+                        .deferContextual(Mono::just)
                         .flatMap(c -> ReactiveSecurityContextHolder.getContext())
                         .map(SecurityContext::getAuthentication)
                         .doOnSuccess(auth -> assertThat(auth).isNull())

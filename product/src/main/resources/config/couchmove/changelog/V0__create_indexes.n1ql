@@ -1,2 +1,0 @@
-CREATE INDEX type ON `${bucket}`(`_class`)
-    WITH { "defer_build" : true };

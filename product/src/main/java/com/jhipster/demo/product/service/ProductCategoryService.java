@@ -3,7 +3,6 @@ package com.jhipster.demo.product.service;
 import com.jhipster.demo.product.domain.ProductCategory;
 import com.jhipster.demo.product.repository.ProductCategoryRepository;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,6 +30,17 @@ public class ProductCategoryService {
      * @return the persisted entity.
      */
     public Mono<ProductCategory> save(ProductCategory productCategory) {
+        log.debug("Request to save ProductCategory : {}", productCategory);
+        return productCategoryRepository.save(productCategory);
+    }
+
+    /**
+     * Update a productCategory.
+     *
+     * @param productCategory the entity to save.
+     * @return the persisted entity.
+     */
+    public Mono<ProductCategory> update(ProductCategory productCategory) {
         log.debug("Request to save ProductCategory : {}", productCategory);
         return productCategoryRepository.save(productCategory);
     }
@@ -98,16 +108,5 @@ public class ProductCategoryService {
     public Mono<Void> delete(String id) {
         log.debug("Request to delete ProductCategory : {}", id);
         return productCategoryRepository.deleteById(id);
-    }
-
-    /**
-     * Search for the productCategory corresponding to the query.
-     *
-     * @param query the query of the search.
-     * @return the list of entities.
-     */
-    public Flux<ProductCategory> search(String query) {
-        log.debug("Request to search ProductCategories for query {}", query);
-        return productCategoryRepository.search(query);
     }
 }

@@ -1,0 +1,5 @@
+CREATE COLLECTION `${bucket}`.`${scope}`.`product`;
+
+CREATE INDEX `product_type` ON `${bucket}`.`${scope}`.`product`(type)
+    WHERE `type` = "product"
+    WITH { "defer_build" : true };

@@ -1,6 +1,7 @@
 package com.jhipster.demo.product.domain;
 
 import static com.jhipster.demo.product.config.Constants.ID_DELIMITER;
+import static com.jhipster.demo.product.domain.ProductOrder.TYPE_NAME;
 import static org.springframework.data.couchbase.core.mapping.id.GenerationStrategy.UNIQUE;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,24 +14,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.validation.constraints.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.couchbase.core.mapping.Document;
 import org.springframework.data.couchbase.core.mapping.Field;
 import org.springframework.data.couchbase.core.mapping.id.GeneratedValue;
-import org.springframework.data.couchbase.core.mapping.id.IdPrefix;
+import org.springframework.data.couchbase.repository.Collection;
 
 /**
  * A ProductOrder.
  */
 @Document
+@TypeAlias(TYPE_NAME)
+@Collection(TYPE_NAME)
 public class ProductOrder implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String PREFIX = "productorder";
-
-    @SuppressWarnings("unused")
-    @IdPrefix
-    private String prefix = PREFIX;
+    public static final String TYPE_NAME = "productOrder";
 
     @Id
     @GeneratedValue(strategy = UNIQUE, delimiter = ID_DELIMITER)

@@ -1,7 +1,7 @@
 package com.jhipster.demo.product.repository;
 
+import static com.jhipster.demo.product.domain.ProductOrder.TYPE_NAME;
 import static com.jhipster.demo.product.repository.JHipsterCouchbaseRepository.pageableStatement;
-import static com.jhipster.demo.product.repository.JHipsterCouchbaseRepository.searchQuery;
 
 import com.couchbase.client.java.query.QueryScanConsistency;
 import com.jhipster.demo.product.domain.ProductOrder;
@@ -20,35 +20,24 @@ import reactor.core.publisher.Mono;
 public interface ProductOrderRepository extends JHipsterCouchbaseRepository<ProductOrder, String> {
     String SELECT =
         "SELECT meta(b).id as __id, meta(b).cas as __cas, b.*" +
-        ", (SELECT `orderItem`.*, meta(`orderItem`).id FROM `orderItems` `orderItem`) as `orderItems`" +
+        ", ARRAY OBJECT_ADD(item, 'id', meta(item).id) FOR item IN `orderItems` END AS `orderItems`" +
         " FROM #{#n1ql.bucket} b";
 
-    String JOIN = " LEFT NEST #{#n1ql.bucket} `orderItems` ON KEYS b.`orderItems`";
+    String JOIN = " LEFT NEST `orderItem` `orderItems` ON KEYS b.`orderItems`";
 
-    default Flux<ProductOrder> findAllBy(Pageable pageable) {
-        return findAllBy(pageableStatement(pageable, "b"));
+    String WHERE = " WHERE b.type = '" + TYPE_NAME + "'";
+
+    default Flux<ProductOrder> findAll(Pageable pageable) {
+        return findAll(pageableStatement(pageable, "b"));
     }
 
-    @Query(SELECT + JOIN + " WHERE b.#{#n1ql.filter} #{[0]}")
+    @Query(SELECT + JOIN + WHERE + " #{[0]}")
     @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
-    Flux<ProductOrder> findAllBy(String pageableStatement);
+    Flux<ProductOrder> findAll(String pageableStatement);
 
-    @Query(SELECT + JOIN + " WHERE b.#{#n1ql.filter}")
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
+    @Query(SELECT + JOIN + WHERE)
     Flux<ProductOrder> findAll();
 
     @Query(SELECT + " USE KEYS $1" + JOIN)
-    @ScanConsistency(query = QueryScanConsistency.REQUEST_PLUS)
     Mono<ProductOrder> findById(String id);
-
-    @Query(SELECT + JOIN + " WHERE b.#{#n1ql.filter} AND SEARCH(b, #{[0]}) #{[1]}")
-    Flux<ProductOrder> search(String queryString, String pageableStatement);
-
-    default Flux<ProductOrder> search(String queryString) {
-        return search(searchQuery(queryString).toString(), "");
-    }
-
-    default Flux<ProductOrder> search(String queryString, Pageable pageable) {
-        return search(searchQuery(queryString).toString(), pageableStatement(pageable, "b"));
-    }
 }

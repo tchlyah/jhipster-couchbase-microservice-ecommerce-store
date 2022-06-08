@@ -106,7 +106,7 @@ public class ProductCategoryResource {
                 }
 
                 return productCategoryService
-                    .save(productCategory)
+                    .update(productCategory)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                     .map(result ->
                         ResponseEntity
@@ -212,18 +212,5 @@ public class ProductCategoryResource {
                     ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build()
                 )
             );
-    }
-
-    /**
-     * {@code SEARCH  /_search/product-categories?query=:query} : search for the productCategory corresponding
-     * to the query.
-     *
-     * @param query the query of the productCategory search.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/product-categories")
-    public Mono<List<ProductCategory>> searchProductCategories(@RequestParam String query) {
-        log.debug("REST request to search ProductCategories for query {}", query);
-        return productCategoryService.search(query).collectList();
     }
 }

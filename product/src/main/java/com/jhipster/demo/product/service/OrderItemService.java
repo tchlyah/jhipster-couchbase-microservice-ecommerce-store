@@ -35,6 +35,17 @@ public class OrderItemService {
     }
 
     /**
+     * Update a orderItem.
+     *
+     * @param orderItem the entity to save.
+     * @return the persisted entity.
+     */
+    public Mono<OrderItem> update(OrderItem orderItem) {
+        log.debug("Request to save OrderItem : {}", orderItem);
+        return orderItemRepository.save(orderItem);
+    }
+
+    /**
      * Partially update a orderItem.
      *
      * @param orderItem the entity to update partially.
@@ -101,17 +112,5 @@ public class OrderItemService {
     public Mono<Void> delete(String id) {
         log.debug("Request to delete OrderItem : {}", id);
         return orderItemRepository.deleteById(id);
-    }
-
-    /**
-     * Search for the orderItem corresponding to the query.
-     *
-     * @param query the query of the search.
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    public Flux<OrderItem> search(String query, Pageable pageable) {
-        log.debug("Request to search for a page of OrderItems for query {}", query);
-        return orderItemRepository.search(query, pageable);
     }
 }

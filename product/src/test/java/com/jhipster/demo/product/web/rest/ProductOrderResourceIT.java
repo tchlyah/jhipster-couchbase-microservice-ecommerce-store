@@ -27,7 +27,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
  * Integration tests for the {@link ProductOrderResource} REST controller.
  */
 @IntegrationTest
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_ENTITY_TIMEOUT)
 @WithMockUser
 class ProductOrderResourceIT {
 
@@ -48,7 +48,6 @@ class ProductOrderResourceIT {
 
     private static final String ENTITY_API_URL = "/api/product-orders";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
-    private static final String ENTITY_SEARCH_API_URL = "/api/_search/product-orders";
 
     @Autowired
     private ProductOrderRepository productOrderRepository;
@@ -560,37 +559,5 @@ class ProductOrderResourceIT {
         SecurityContextHolder.setContext(TestSecurityContextHolder.getContext());
         List<ProductOrder> productOrderList = productOrderRepository.findAll().collectList().block();
         assertThat(productOrderList).hasSize(databaseSizeBeforeDelete - 1);
-    }
-
-    @Test
-    void searchProductOrder() {
-        // Initialize the database
-        productOrderRepository.save(productOrder).block();
-
-        // Wait for the productOrder to be indexed
-        TestUtil.retryUntilNotEmpty(() -> productOrderRepository.search("id:" + productOrder.getId()).collectList().block());
-
-        // Search the productOrder
-        webTestClient
-            .get()
-            .uri(ENTITY_SEARCH_API_URL + "?query=id:" + productOrder.getId())
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .expectHeader()
-            .contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.[*].id")
-            .value(hasItem(productOrder.getId()))
-            .jsonPath("$.[*].placedDate")
-            .value(hasItem(DEFAULT_PLACED_DATE.toString()))
-            .jsonPath("$.[*].status")
-            .value(hasItem(DEFAULT_STATUS.toString()))
-            .jsonPath("$.[*].code")
-            .value(hasItem(DEFAULT_CODE))
-            .jsonPath("$.[*].invoiceId")
-            .value(hasItem(DEFAULT_INVOICE_ID.intValue()))
-            .jsonPath("$.[*].customer")
-            .value(hasItem(DEFAULT_CUSTOMER));
     }
 }
