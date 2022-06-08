@@ -1,13 +1,13 @@
 {
   "generator-jhipster": {
     "appsFolders": ["store", "product", "invoice", "notification"],
-    "directoryPath": "../",
-    "gatewayType": "SpringCloudGateway",
     "clusteredDbApps": [],
-    "monitoring": "prometheus",
-    "serviceDiscoveryType": "eureka",
     "deploymentType": "docker-compose",
+    "directoryPath": "../",
     "dockerRepositoryName": "tayebchlyah",
-    "jwtSecretKey": "OTIyMmMzMTUxNDI4ZWQ3MDkwZWFkMmZlYjc4MTI4ZTJlMzc3YWE5Yzc5MTc0ZWQxYzJhNGRkNWY3N2YzM2M4OWUzYzQ3YTlhNDZhNGE4YzAwMmU2Nzc3ZGIxMGRmYjRlYTIxOQ=="
+    "gatewayType": "SpringCloudGateway",
+    "jwtSecretKey": "OTIyMmMzMTUxNDI4ZWQ3MDkwZWFkMmZlYjc4MTI4ZTJlMzc3YWE5Yzc5MTc0ZWQxYzJhNGRkNWY3N2YzM2M4OWUzYzQ3YTlhNDZhNGE4YzAwMmU2Nzc3ZGIxMGRmYjRlYTIxOQ==",
+    "monitoring": "prometheus",
+    "serviceDiscoveryType": "eureka"
   }
 }
