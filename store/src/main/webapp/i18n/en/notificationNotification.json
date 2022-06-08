@@ -6,7 +6,6 @@
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Notification",
         "createOrEditLabel": "Create or edit a Notification",
-        "search": "Search for Notification",
         "notFound": "No Notifications found"
       },
       "delete": {

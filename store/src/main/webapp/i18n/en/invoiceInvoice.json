@@ -6,7 +6,6 @@
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Invoice",
         "createOrEditLabel": "Create or edit a Invoice",
-        "search": "Search for Invoice",
         "notFound": "No Invoices found"
       },
       "delete": {

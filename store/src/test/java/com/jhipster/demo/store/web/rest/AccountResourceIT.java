@@ -2,12 +2,12 @@ package com.jhipster.demo.store.web.rest;
 
 import static com.jhipster.demo.store.web.rest.AccountResourceIT.TEST_USER_LOGIN;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultHandlers.exportTestSecurityContext;
 
 import com.jhipster.demo.store.CouchbaseTestContainerExtension;
 import com.jhipster.demo.store.IntegrationTest;
 import com.jhipster.demo.store.config.Constants;
 import com.jhipster.demo.store.domain.User;
-import com.jhipster.demo.store.repository.AuthorityRepository;
 import com.jhipster.demo.store.repository.UserRepository;
 import com.jhipster.demo.store.security.AuthoritiesConstants;
 import com.jhipster.demo.store.service.UserService;
@@ -20,7 +20,6 @@ import java.time.Instant;
 import java.util.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.http.HttpStatus;
@@ -32,7 +31,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 /**
  * Integration tests for the {@link AccountResource} REST controller.
  */
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_TIMEOUT)
 @WithMockUser(value = TEST_USER_LOGIN)
 @IntegrationTest
 class AccountResourceIT {

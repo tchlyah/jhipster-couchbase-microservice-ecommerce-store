@@ -16,14 +16,8 @@ const initialState: EntityState<IInvoice> = {
 };
 
 const apiUrl = 'services/invoice/api/invoices';
-const apiSearchUrl = 'services/invoice/api/_search/invoices';
 
 // Actions
-
-export const searchEntities = createAsyncThunk('invoice/search_entity', async ({ query, page, size, sort }: IQueryParams) => {
-  const requestUrl = `${apiSearchUrl}?query=${query}${sort ? `&page=${page}&size=${size}&sort=${sort}` : ''}`;
-  return axios.get<IInvoice[]>(requestUrl);
-});
 
 export const getEntities = createAsyncThunk('invoice/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
   const requestUrl = `${apiUrl}${sort ? `?page=${page}&size=${size}&sort=${sort}&` : '?'}cacheBuster=${new Date().getTime()}`;
@@ -96,12 +90,14 @@ export const InvoiceSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = {};
       })
-      .addMatcher(isFulfilled(getEntities, searchEntities), (state, action) => {
+      .addMatcher(isFulfilled(getEntities), (state, action) => {
+        const { data, headers } = action.payload;
+
         return {
           ...state,
           loading: false,
-          entities: action.payload.data,
-          totalItems: parseInt(action.payload.headers['x-total-count'], 10),
+          entities: data,
+          totalItems: parseInt(headers['x-total-count'], 10),
         };
       })
       .addMatcher(isFulfilled(createEntity, updateEntity, partialUpdateEntity), (state, action) => {
@@ -110,7 +106,7 @@ export const InvoiceSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = action.payload.data;
       })
-      .addMatcher(isPending(getEntities, getEntity, searchEntities), state => {
+      .addMatcher(isPending(getEntities, getEntity), state => {
         state.errorMessage = null;
         state.updateSuccess = false;
         state.loading = true;

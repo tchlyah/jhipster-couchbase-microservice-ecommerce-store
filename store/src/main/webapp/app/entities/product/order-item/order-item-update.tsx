@@ -4,28 +4,30 @@ import { Button, Row, Col, FormText } from 'reactstrap';
 import { isNumber, Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
+import { mapIdList } from 'app/shared/util/entity-utils';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
+
 import { IProduct } from 'app/shared/model/product/product.model';
 import { getEntities as getProducts } from 'app/entities/product/product/product.reducer';
 import { IProductOrder } from 'app/shared/model/product/product-order.model';
 import { getEntities as getProductOrders } from 'app/entities/product/product-order/product-order.reducer';
-import { getEntity, updateEntity, createEntity, reset } from './order-item.reducer';
 import { IOrderItem } from 'app/shared/model/product/order-item.model';
-import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
-import { mapIdList } from 'app/shared/util/entity-utils';
-import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { OrderItemStatus } from 'app/shared/model/enumerations/order-item-status.model';
+import { getEntity, updateEntity, createEntity, reset } from './order-item.reducer';
 
 export const OrderItemUpdate = (props: RouteComponentProps<{ id: string }>) => {
   const dispatch = useAppDispatch();
 
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
-  const products = useAppSelector(state => state.product.entities);
-  const productOrders = useAppSelector(state => state.productOrder.entities);
-  const orderItemEntity = useAppSelector(state => state.orderItem.entity);
-  const loading = useAppSelector(state => state.orderItem.loading);
-  const updating = useAppSelector(state => state.orderItem.updating);
-  const updateSuccess = useAppSelector(state => state.orderItem.updateSuccess);
-
+  const products = useAppSelector(state => state.store.product.entities);
+  const productOrders = useAppSelector(state => state.store.productOrder.entities);
+  const orderItemEntity = useAppSelector(state => state.store.orderItem.entity);
+  const loading = useAppSelector(state => state.store.orderItem.loading);
+  const updating = useAppSelector(state => state.store.orderItem.updating);
+  const updateSuccess = useAppSelector(state => state.store.orderItem.updateSuccess);
+  const orderItemStatusValues = Object.keys(OrderItemStatus);
   const handleClose = () => {
     props.history.push('/order-item' + props.location.search);
   };
@@ -51,8 +53,8 @@ export const OrderItemUpdate = (props: RouteComponentProps<{ id: string }>) => {
     const entity = {
       ...orderItemEntity,
       ...values,
-      product: products.find(it => it.id.toString() === values.productId.toString()),
-      order: productOrders.find(it => it.id.toString() === values.orderId.toString()),
+      product: products.find(it => it.id.toString() === values.product.toString()),
+      order: productOrders.find(it => it.id.toString() === values.order.toString()),
     };
 
     if (isNew) {
@@ -68,8 +70,8 @@ export const OrderItemUpdate = (props: RouteComponentProps<{ id: string }>) => {
       : {
           status: 'AVAILABLE',
           ...orderItemEntity,
-          productId: orderItemEntity?.product?.id,
-          orderId: orderItemEntity?.order?.id,
+          product: orderItemEntity?.product?.id,
+          order: orderItemEntity?.order?.id,
         };
 
   return (
@@ -128,13 +130,15 @@ export const OrderItemUpdate = (props: RouteComponentProps<{ id: string }>) => {
                 data-cy="status"
                 type="select"
               >
-                <option value="AVAILABLE">{translate('storeApp.OrderItemStatus.AVAILABLE')}</option>
-                <option value="OUT_OF_STOCK">{translate('storeApp.OrderItemStatus.OUT_OF_STOCK')}</option>
-                <option value="BACK_ORDER">{translate('storeApp.OrderItemStatus.BACK_ORDER')}</option>
+                {orderItemStatusValues.map(orderItemStatus => (
+                  <option value={orderItemStatus} key={orderItemStatus}>
+                    {translate('storeApp.OrderItemStatus.' + orderItemStatus)}
+                  </option>
+                ))}
               </ValidatedField>
               <ValidatedField
                 id="order-item-product"
-                name="productId"
+                name="product"
                 data-cy="product"
                 label={translate('storeApp.productOrderItem.product')}
                 type="select"
@@ -154,7 +158,7 @@ export const OrderItemUpdate = (props: RouteComponentProps<{ id: string }>) => {
               </FormText>
               <ValidatedField
                 id="order-item-order"
-                name="orderId"
+                name="order"
                 data-cy="order"
                 label={translate('storeApp.productOrderItem.order')}
                 type="select"

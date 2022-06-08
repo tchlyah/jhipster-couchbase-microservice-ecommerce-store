@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { Translate } from 'react-jhipster';
@@ -8,22 +8,25 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity, deleteEntity } from './notification.reducer';
 
 export const NotificationDeleteDialog = (props: RouteComponentProps<{ id: string }>) => {
+  const [loadModal, setLoadModal] = useState(false);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(getEntity(props.match.params.id));
+    setLoadModal(true);
   }, []);
 
-  const notificationEntity = useAppSelector(state => state.notification.entity);
-  const updateSuccess = useAppSelector(state => state.notification.updateSuccess);
+  const notificationEntity = useAppSelector(state => state.store.notification.entity);
+  const updateSuccess = useAppSelector(state => state.store.notification.updateSuccess);
 
   const handleClose = () => {
     props.history.push('/notification');
   };
 
   useEffect(() => {
-    if (updateSuccess) {
+    if (updateSuccess && loadModal) {
       handleClose();
+      setLoadModal(false);
     }
   }, [updateSuccess]);
 

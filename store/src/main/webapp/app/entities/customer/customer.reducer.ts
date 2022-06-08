@@ -97,11 +97,13 @@ export const CustomerSlice = createEntitySlice({
         state.entity = {};
       })
       .addMatcher(isFulfilled(getEntities, searchEntities), (state, action) => {
+        const { data, headers } = action.payload;
+
         return {
           ...state,
           loading: false,
-          entities: action.payload.data,
-          totalItems: parseInt(action.payload.headers['x-total-count'], 10),
+          entities: data,
+          totalItems: parseInt(headers['x-total-count'], 10),
         };
       })
       .addMatcher(isFulfilled(createEntity, updateEntity, partialUpdateEntity), (state, action) => {

@@ -6,7 +6,6 @@
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Product Category",
         "createOrEditLabel": "Create or edit a Product Category",
-        "search": "Search for Product Category",
         "notFound": "No Product Categories found"
       },
       "delete": {

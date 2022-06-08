@@ -14,16 +14,21 @@ import {
 describe('Invoice e2e test', () => {
   const invoicePageUrl = '/invoice';
   const invoicePageUrlPattern = new RegExp('/invoice(\\?.*)?$');
-  const username = Cypress.env('E2E_USERNAME') ?? 'admin';
-  const password = Cypress.env('E2E_PASSWORD') ?? 'admin';
+  const username = Cypress.env('E2E_USERNAME') ?? 'user';
+  const password = Cypress.env('E2E_PASSWORD') ?? 'user';
+  const invoiceSample = {
+    code: 'microchip',
+    date: '2021-09-20T15:42:50.017Z',
+    status: 'PAID',
+    paymentMethod: 'CASH_ON_DELIVERY',
+    paymentDate: '2021-09-20T17:58:17.769Z',
+    paymentAmount: 43049,
+  };
 
-  before(() => {
-    cy.window().then(win => {
-      win.sessionStorage.clear();
-    });
-    cy.visit('');
+  let invoice: any;
+
+  beforeEach(() => {
     cy.login(username, password);
-    cy.get(entityItemSelector).should('exist');
   });
 
   beforeEach(() => {
@@ -32,11 +37,22 @@ describe('Invoice e2e test', () => {
     cy.intercept('DELETE', '/services/invoice/api/invoices/*').as('deleteEntityRequest');
   });
 
-  it('should load Invoices', () => {
+  afterEach(() => {
+    if (invoice) {
+      cy.authenticatedRequest({
+        method: 'DELETE',
+        url: `/services/invoice/api/invoices/${invoice.id}`,
+      }).then(() => {
+        invoice = undefined;
+      });
+    }
+  });
+
+  it('Invoices menu should load Invoices page', () => {
     cy.visit('/');
     cy.clickOnEntityMenuItem('invoice');
     cy.wait('@entitiesRequest').then(({ response }) => {
-      if (response.body.length === 0) {
+      if (response!.body.length === 0) {
         cy.get(entityTableSelector).should('not.exist');
       } else {
         cy.get(entityTableSelector).should('exist');
@@ -46,103 +62,128 @@ describe('Invoice e2e test', () => {
     cy.url().should('match', invoicePageUrlPattern);
   });
 
-  it('should load details Invoice page', function () {
-    cy.visit(invoicePageUrl);
-    cy.wait('@entitiesRequest').then(({ response }) => {
-      if (response.body.length === 0) {
-        this.skip();
-      }
-    });
-    cy.get(entityDetailsButtonSelector).first().click({ force: true });
-    cy.getEntityDetailsHeading('invoice');
-    cy.get(entityDetailsBackButtonSelector).click({ force: true });
-    cy.wait('@entitiesRequest').then(({ response }) => {
-      expect(response.statusCode).to.equal(200);
-    });
-    cy.url().should('match', invoicePageUrlPattern);
-  });
+  describe('Invoice page', () => {
+    describe('create button click', () => {
+      beforeEach(() => {
+        cy.visit(invoicePageUrl);
+        cy.wait('@entitiesRequest');
+      });
 
-  it('should load create Invoice page', () => {
-    cy.visit(invoicePageUrl);
-    cy.wait('@entitiesRequest');
-    cy.get(entityCreateButtonSelector).click({ force: true });
-    cy.getEntityCreateUpdateHeading('Invoice');
-    cy.get(entityCreateSaveButtonSelector).should('exist');
-    cy.get(entityCreateCancelButtonSelector).click({ force: true });
-    cy.wait('@entitiesRequest').then(({ response }) => {
-      expect(response.statusCode).to.equal(200);
-    });
-    cy.url().should('match', invoicePageUrlPattern);
-  });
-
-  it('should load edit Invoice page', function () {
-    cy.visit(invoicePageUrl);
-    cy.wait('@entitiesRequest').then(({ response }) => {
-      if (response.body.length === 0) {
-        this.skip();
-      }
-    });
-    cy.get(entityEditButtonSelector).first().click({ force: true });
-    cy.getEntityCreateUpdateHeading('Invoice');
-    cy.get(entityCreateSaveButtonSelector).should('exist');
-    cy.get(entityCreateCancelButtonSelector).click({ force: true });
-    cy.wait('@entitiesRequest').then(({ response }) => {
-      expect(response.statusCode).to.equal(200);
-    });
-    cy.url().should('match', invoicePageUrlPattern);
-  });
-
-  it('should create an instance of Invoice', () => {
-    cy.visit(invoicePageUrl);
-    cy.get(entityCreateButtonSelector).click({ force: true });
-    cy.getEntityCreateUpdateHeading('Invoice');
-
-    cy.get(`[data-cy="code"]`).type('Universal Central').should('have.value', 'Universal Central');
-
-    cy.get(`[data-cy="date"]`).type('2021-09-20T22:56').should('have.value', '2021-09-20T22:56');
-
-    cy.get(`[data-cy="details"]`).type('Knoll').should('have.value', 'Knoll');
-
-    cy.get(`[data-cy="status"]`).select('PAID');
-
-    cy.get(`[data-cy="paymentMethod"]`).select('PAYPAL');
-
-    cy.get(`[data-cy="paymentDate"]`).type('2021-09-20T16:24').should('have.value', '2021-09-20T16:24');
-
-    cy.get(`[data-cy="paymentAmount"]`).type('85705').should('have.value', '85705');
-
-    cy.get(entityCreateSaveButtonSelector).click({ force: true });
-    cy.scrollTo('top', { ensureScrollable: false });
-    cy.get(entityCreateSaveButtonSelector).should('not.exist');
-    cy.wait('@postEntityRequest').then(({ response }) => {
-      expect(response.statusCode).to.equal(201);
-    });
-    cy.wait('@entitiesRequest').then(({ response }) => {
-      expect(response.statusCode).to.equal(200);
-    });
-    cy.url().should('match', invoicePageUrlPattern);
-  });
-
-  it('should delete last instance of Invoice', function () {
-    cy.intercept('GET', '/services/invoice/api/invoices/*').as('dialogDeleteRequest');
-    cy.visit(invoicePageUrl);
-    cy.wait('@entitiesRequest').then(({ response }) => {
-      if (response.body.length > 0) {
-        cy.get(entityTableSelector).should('have.lengthOf', response.body.length);
-        cy.get(entityDeleteButtonSelector).last().click({ force: true });
-        cy.wait('@dialogDeleteRequest');
-        cy.getEntityDeleteDialogHeading('invoice').should('exist');
-        cy.get(entityConfirmDeleteButtonSelector).click({ force: true });
-        cy.wait('@deleteEntityRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(204);
-        });
+      it('should load create Invoice page', () => {
+        cy.get(entityCreateButtonSelector).click();
+        cy.url().should('match', new RegExp('/invoice/new$'));
+        cy.getEntityCreateUpdateHeading('Invoice');
+        cy.get(entityCreateSaveButtonSelector).should('exist');
+        cy.get(entityCreateCancelButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response!.statusCode).to.equal(200);
         });
         cy.url().should('match', invoicePageUrlPattern);
-      } else {
-        this.skip();
-      }
+      });
+    });
+
+    describe('with existing value', () => {
+      beforeEach(() => {
+        cy.authenticatedRequest({
+          method: 'POST',
+          url: '/services/invoice/api/invoices',
+          body: invoiceSample,
+        }).then(({ body }) => {
+          invoice = body;
+
+          cy.intercept(
+            {
+              method: 'GET',
+              url: '/services/invoice/api/invoices+(?*|)',
+              times: 1,
+            },
+            {
+              statusCode: 200,
+              headers: {
+                link: '<http://localhost/services/invoice/api/invoices?page=0&size=20>; rel="last",<http://localhost/services/invoice/api/invoices?page=0&size=20>; rel="first"',
+              },
+              body: [invoice],
+            }
+          ).as('entitiesRequestInternal');
+        });
+
+        cy.visit(invoicePageUrl);
+
+        cy.wait('@entitiesRequestInternal');
+      });
+
+      it('detail button click should load details Invoice page', () => {
+        cy.get(entityDetailsButtonSelector).first().click();
+        cy.getEntityDetailsHeading('invoice');
+        cy.get(entityDetailsBackButtonSelector).click();
+        cy.wait('@entitiesRequest').then(({ response }) => {
+          expect(response!.statusCode).to.equal(200);
+        });
+        cy.url().should('match', invoicePageUrlPattern);
+      });
+
+      it('edit button click should load edit Invoice page', () => {
+        cy.get(entityEditButtonSelector).first().click();
+        cy.getEntityCreateUpdateHeading('Invoice');
+        cy.get(entityCreateSaveButtonSelector).should('exist');
+        cy.get(entityCreateCancelButtonSelector).click();
+        cy.wait('@entitiesRequest').then(({ response }) => {
+          expect(response!.statusCode).to.equal(200);
+        });
+        cy.url().should('match', invoicePageUrlPattern);
+      });
+
+      it('last delete button click should delete instance of Invoice', () => {
+        cy.intercept('GET', '/services/invoice/api/invoices/*').as('dialogDeleteRequest');
+        cy.get(entityDeleteButtonSelector).last().click();
+        cy.wait('@dialogDeleteRequest');
+        cy.getEntityDeleteDialogHeading('invoice').should('exist');
+        cy.get(entityConfirmDeleteButtonSelector).click();
+        cy.wait('@deleteEntityRequest').then(({ response }) => {
+          expect(response!.statusCode).to.equal(204);
+        });
+        cy.wait('@entitiesRequest').then(({ response }) => {
+          expect(response!.statusCode).to.equal(200);
+        });
+        cy.url().should('match', invoicePageUrlPattern);
+
+        invoice = undefined;
+      });
+    });
+  });
+
+  describe('new Invoice page', () => {
+    beforeEach(() => {
+      cy.visit(`${invoicePageUrl}`);
+      cy.get(entityCreateButtonSelector).click();
+      cy.getEntityCreateUpdateHeading('Invoice');
+    });
+
+    it('should create an instance of Invoice', () => {
+      cy.get(`[data-cy="code"]`).type('Universal Central').should('have.value', 'Universal Central');
+
+      cy.get(`[data-cy="date"]`).type('2021-09-20T22:56').should('have.value', '2021-09-20T22:56');
+
+      cy.get(`[data-cy="details"]`).type('Knoll').should('have.value', 'Knoll');
+
+      cy.get(`[data-cy="status"]`).select('PAID');
+
+      cy.get(`[data-cy="paymentMethod"]`).select('PAYPAL');
+
+      cy.get(`[data-cy="paymentDate"]`).type('2021-09-20T16:24').should('have.value', '2021-09-20T16:24');
+
+      cy.get(`[data-cy="paymentAmount"]`).type('85705').should('have.value', '85705');
+
+      cy.get(entityCreateSaveButtonSelector).click();
+
+      cy.wait('@postEntityRequest').then(({ response }) => {
+        expect(response!.statusCode).to.equal(201);
+        invoice = response!.body;
+      });
+      cy.wait('@entitiesRequest').then(({ response }) => {
+        expect(response!.statusCode).to.equal(200);
+      });
+      cy.url().should('match', invoicePageUrlPattern);
     });
   });
 });

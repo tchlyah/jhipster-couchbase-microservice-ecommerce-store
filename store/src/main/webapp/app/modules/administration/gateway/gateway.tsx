@@ -20,8 +20,8 @@ export const GatewayPage = () => {
     Object.keys(instance).map((key, index) => {
       spans.push(
         <span key={key.toString() + 'value'}>
-          <Badge key={key.toString() + '-containerbadge'} className="font-weight-normal">
-            <Badge key={key.toString() + '-badge'} color="info" className="font-weight-normal" pill>
+          <Badge key={key.toString() + '-containerbadge'} className="fw-normal">
+            <Badge key={key.toString() + '-badge'} color="info" className="fw-normal" pill>
               {key}
             </Badge>
             {instance[key]}

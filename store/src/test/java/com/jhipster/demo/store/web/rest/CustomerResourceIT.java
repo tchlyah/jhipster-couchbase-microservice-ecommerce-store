@@ -26,7 +26,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
  * Integration tests for the {@link CustomerResource} REST controller.
  */
 @IntegrationTest
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_ENTITY_TIMEOUT)
 @WithMockUser
 class CustomerResourceIT {
 

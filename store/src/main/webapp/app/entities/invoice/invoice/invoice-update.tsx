@@ -4,22 +4,26 @@ import { Button, Row, Col, FormText } from 'reactstrap';
 import { isNumber, Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { getEntity, updateEntity, createEntity, reset } from './invoice.reducer';
-import { IInvoice } from 'app/shared/model/invoice/invoice.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
 import { mapIdList } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+
+import { IInvoice } from 'app/shared/model/invoice/invoice.model';
+import { InvoiceStatus } from 'app/shared/model/enumerations/invoice-status.model';
+import { PaymentMethod } from 'app/shared/model/enumerations/payment-method.model';
+import { getEntity, updateEntity, createEntity, reset } from './invoice.reducer';
 
 export const InvoiceUpdate = (props: RouteComponentProps<{ id: string }>) => {
   const dispatch = useAppDispatch();
 
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
-  const invoiceEntity = useAppSelector(state => state.invoice.entity);
-  const loading = useAppSelector(state => state.invoice.loading);
-  const updating = useAppSelector(state => state.invoice.updating);
-  const updateSuccess = useAppSelector(state => state.invoice.updateSuccess);
-
+  const invoiceEntity = useAppSelector(state => state.store.invoice.entity);
+  const loading = useAppSelector(state => state.store.invoice.loading);
+  const updating = useAppSelector(state => state.store.invoice.updating);
+  const updateSuccess = useAppSelector(state => state.store.invoice.updateSuccess);
+  const invoiceStatusValues = Object.keys(InvoiceStatus);
+  const paymentMethodValues = Object.keys(PaymentMethod);
   const handleClose = () => {
     props.history.push('/invoice' + props.location.search);
   };
@@ -128,9 +132,11 @@ export const InvoiceUpdate = (props: RouteComponentProps<{ id: string }>) => {
                 data-cy="status"
                 type="select"
               >
-                <option value="PAID">{translate('storeApp.InvoiceStatus.PAID')}</option>
-                <option value="ISSUED">{translate('storeApp.InvoiceStatus.ISSUED')}</option>
-                <option value="CANCELLED">{translate('storeApp.InvoiceStatus.CANCELLED')}</option>
+                {invoiceStatusValues.map(invoiceStatus => (
+                  <option value={invoiceStatus} key={invoiceStatus}>
+                    {translate('storeApp.InvoiceStatus.' + invoiceStatus)}
+                  </option>
+                ))}
               </ValidatedField>
               <ValidatedField
                 label={translate('storeApp.invoiceInvoice.paymentMethod')}
@@ -139,9 +145,11 @@ export const InvoiceUpdate = (props: RouteComponentProps<{ id: string }>) => {
                 data-cy="paymentMethod"
                 type="select"
               >
-                <option value="CREDIT_CARD">{translate('storeApp.PaymentMethod.CREDIT_CARD')}</option>
-                <option value="CASH_ON_DELIVERY">{translate('storeApp.PaymentMethod.CASH_ON_DELIVERY')}</option>
-                <option value="PAYPAL">{translate('storeApp.PaymentMethod.PAYPAL')}</option>
+                {paymentMethodValues.map(paymentMethod => (
+                  <option value={paymentMethod} key={paymentMethod}>
+                    {translate('storeApp.PaymentMethod.' + paymentMethod)}
+                  </option>
+                ))}
               </ValidatedField>
               <ValidatedField
                 label={translate('storeApp.invoiceInvoice.paymentDate')}

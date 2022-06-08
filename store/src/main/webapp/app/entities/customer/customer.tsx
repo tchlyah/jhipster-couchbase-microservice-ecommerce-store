@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { Button, Input, InputGroup, FormGroup, Form, Col, Row, Table } from 'reactstrap';
+import { Button, Input, InputGroup, FormGroup, Form, Row, Col, Table } from 'reactstrap';
 import { Translate, translate, getSortState, JhiPagination, JhiItemCount } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { searchEntities, getEntities } from './customer.reducer';
-import { ICustomer } from 'app/shared/model/customer.model';
 import { APP_DATE_FORMAT, APP_LOCAL_DATE_FORMAT } from 'app/config/constants';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+
+import { ICustomer } from 'app/shared/model/customer.model';
+import { searchEntities, getEntities } from './customer.reducer';
 
 export const Customer = (props: RouteComponentProps<{ url: string }>) => {
   const dispatch = useAppDispatch();
@@ -19,9 +20,9 @@ export const Customer = (props: RouteComponentProps<{ url: string }>) => {
     overridePaginationStateWithQueryParams(getSortState(props.location, ITEMS_PER_PAGE, 'id'), props.location.search)
   );
 
-  const customerList = useAppSelector(state => state.customer.entities);
-  const loading = useAppSelector(state => state.customer.loading);
-  const totalItems = useAppSelector(state => state.customer.totalItems);
+  const customerList = useAppSelector(state => state.store.customer.entities);
+  const loading = useAppSelector(state => state.store.customer.loading);
+  const totalItems = useAppSelector(state => state.store.customer.totalItems);
 
   const getAllEntities = () => {
     if (search) {
@@ -125,11 +126,11 @@ export const Customer = (props: RouteComponentProps<{ url: string }>) => {
       <h2 id="customer-heading" data-cy="CustomerHeading">
         <Translate contentKey="storeApp.customer.home.title">Customers</Translate>
         <div className="d-flex justify-content-end">
-          <Button className="mr-2" color="info" onClick={handleSyncList} disabled={loading}>
+          <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
             <FontAwesomeIcon icon="sync" spin={loading} />{' '}
             <Translate contentKey="storeApp.customer.home.refreshListLabel">Refresh List</Translate>
           </Button>
-          <Link to={`${match.url}/new`} className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
+          <Link to="/customer/new" className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
             <FontAwesomeIcon icon="plus" />
             &nbsp;
             <Translate contentKey="storeApp.customer.home.createLabel">Create new Customer</Translate>
@@ -204,7 +205,7 @@ export const Customer = (props: RouteComponentProps<{ url: string }>) => {
               {customerList.map((customer, i) => (
                 <tr key={`entity-${i}`} data-cy="entityTable">
                   <td>
-                    <Button tag={Link} to={`${match.url}/${customer.id}`} color="link" size="sm">
+                    <Button tag={Link} to={`/customer/${customer.id}`} color="link" size="sm">
                       {customer.id}
                     </Button>
                   </td>
@@ -220,9 +221,9 @@ export const Customer = (props: RouteComponentProps<{ url: string }>) => {
                   <td>{customer.city}</td>
                   <td>{customer.country}</td>
                   <td>{customer.user ? customer.user.login : ''}</td>
-                  <td className="text-right">
+                  <td className="text-end">
                     <div className="btn-group flex-btn-group-container">
-                      <Button tag={Link} to={`${match.url}/${customer.id}`} color="info" size="sm" data-cy="entityDetailsButton">
+                      <Button tag={Link} to={`/customer/${customer.id}`} color="info" size="sm" data-cy="entityDetailsButton">
                         <FontAwesomeIcon icon="eye" />{' '}
                         <span className="d-none d-md-inline">
                           <Translate contentKey="entity.action.view">View</Translate>
@@ -230,7 +231,7 @@ export const Customer = (props: RouteComponentProps<{ url: string }>) => {
                       </Button>
                       <Button
                         tag={Link}
-                        to={`${match.url}/${customer.id}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                        to={`/customer/${customer.id}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
                         color="primary"
                         size="sm"
                         data-cy="entityEditButton"
@@ -242,7 +243,7 @@ export const Customer = (props: RouteComponentProps<{ url: string }>) => {
                       </Button>
                       <Button
                         tag={Link}
-                        to={`${match.url}/${customer.id}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                        to={`/customer/${customer.id}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
                         color="danger"
                         size="sm"
                         data-cy="entityDeleteButton"
@@ -268,10 +269,10 @@ export const Customer = (props: RouteComponentProps<{ url: string }>) => {
       </div>
       {totalItems ? (
         <div className={customerList && customerList.length > 0 ? '' : 'd-none'}>
-          <Row className="justify-content-center">
+          <div className="justify-content-center d-flex">
             <JhiItemCount page={paginationState.activePage} total={totalItems} itemsPerPage={paginationState.itemsPerPage} i18nEnabled />
-          </Row>
-          <Row className="justify-content-center">
+          </div>
+          <div className="justify-content-center d-flex">
             <JhiPagination
               activePage={paginationState.activePage}
               onSelect={handlePagination}
@@ -279,7 +280,7 @@ export const Customer = (props: RouteComponentProps<{ url: string }>) => {
               itemsPerPage={paginationState.itemsPerPage}
               totalItems={totalItems}
             />
-          </Row>
+          </div>
         </div>
       ) : (
         ''

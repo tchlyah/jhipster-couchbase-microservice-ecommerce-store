@@ -1,39 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { Button, Input, InputGroup, FormGroup, Form, Col, Row, Table } from 'reactstrap';
-import { Translate, translate } from 'react-jhipster';
+import { Button, Table } from 'reactstrap';
+import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { searchEntities, getEntities } from './product-category.reducer';
-import { IProductCategory } from 'app/shared/model/product/product-category.model';
 import { APP_DATE_FORMAT, APP_LOCAL_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+
+import { IProductCategory } from 'app/shared/model/product/product-category.model';
+import { getEntities } from './product-category.reducer';
 
 export const ProductCategory = (props: RouteComponentProps<{ url: string }>) => {
   const dispatch = useAppDispatch();
 
-  const [search, setSearch] = useState('');
-
-  const productCategoryList = useAppSelector(state => state.productCategory.entities);
-  const loading = useAppSelector(state => state.productCategory.loading);
+  const productCategoryList = useAppSelector(state => state.store.productCategory.entities);
+  const loading = useAppSelector(state => state.store.productCategory.loading);
 
   useEffect(() => {
     dispatch(getEntities({}));
   }, []);
-
-  const startSearching = e => {
-    if (search) {
-      dispatch(searchEntities({ query: search }));
-    }
-    e.preventDefault();
-  };
-
-  const clear = () => {
-    setSearch('');
-    dispatch(getEntities({}));
-  };
-
-  const handleSearch = event => setSearch(event.target.value);
 
   const handleSyncList = () => {
     dispatch(getEntities({}));
@@ -46,40 +31,17 @@ export const ProductCategory = (props: RouteComponentProps<{ url: string }>) => 
       <h2 id="product-category-heading" data-cy="ProductCategoryHeading">
         <Translate contentKey="storeApp.productProductCategory.home.title">Product Categories</Translate>
         <div className="d-flex justify-content-end">
-          <Button className="mr-2" color="info" onClick={handleSyncList} disabled={loading}>
+          <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
             <FontAwesomeIcon icon="sync" spin={loading} />{' '}
             <Translate contentKey="storeApp.productProductCategory.home.refreshListLabel">Refresh List</Translate>
           </Button>
-          <Link to={`${match.url}/new`} className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
+          <Link to="/product-category/new" className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
             <FontAwesomeIcon icon="plus" />
             &nbsp;
             <Translate contentKey="storeApp.productProductCategory.home.createLabel">Create new Product Category</Translate>
           </Link>
         </div>
       </h2>
-      <Row>
-        <Col sm="12">
-          <Form onSubmit={startSearching}>
-            <FormGroup>
-              <InputGroup>
-                <Input
-                  type="text"
-                  name="search"
-                  defaultValue={search}
-                  onChange={handleSearch}
-                  placeholder={translate('storeApp.productProductCategory.home.search')}
-                />
-                <Button className="input-group-addon">
-                  <FontAwesomeIcon icon="search" />
-                </Button>
-                <Button type="reset" className="input-group-addon" onClick={clear}>
-                  <FontAwesomeIcon icon="trash" />
-                </Button>
-              </InputGroup>
-            </FormGroup>
-          </Form>
-        </Col>
-      </Row>
       <div className="table-responsive">
         {productCategoryList && productCategoryList.length > 0 ? (
           <Table responsive>
@@ -101,15 +63,21 @@ export const ProductCategory = (props: RouteComponentProps<{ url: string }>) => 
               {productCategoryList.map((productCategory, i) => (
                 <tr key={`entity-${i}`} data-cy="entityTable">
                   <td>
-                    <Button tag={Link} to={`${match.url}/${productCategory.id}`} color="link" size="sm">
+                    <Button tag={Link} to={`/product-category/${productCategory.id}`} color="link" size="sm">
                       {productCategory.id}
                     </Button>
                   </td>
                   <td>{productCategory.name}</td>
                   <td>{productCategory.description}</td>
-                  <td className="text-right">
+                  <td className="text-end">
                     <div className="btn-group flex-btn-group-container">
-                      <Button tag={Link} to={`${match.url}/${productCategory.id}`} color="info" size="sm" data-cy="entityDetailsButton">
+                      <Button
+                        tag={Link}
+                        to={`/product-category/${productCategory.id}`}
+                        color="info"
+                        size="sm"
+                        data-cy="entityDetailsButton"
+                      >
                         <FontAwesomeIcon icon="eye" />{' '}
                         <span className="d-none d-md-inline">
                           <Translate contentKey="entity.action.view">View</Translate>
@@ -117,7 +85,7 @@ export const ProductCategory = (props: RouteComponentProps<{ url: string }>) => 
                       </Button>
                       <Button
                         tag={Link}
-                        to={`${match.url}/${productCategory.id}/edit`}
+                        to={`/product-category/${productCategory.id}/edit`}
                         color="primary"
                         size="sm"
                         data-cy="entityEditButton"
@@ -129,7 +97,7 @@ export const ProductCategory = (props: RouteComponentProps<{ url: string }>) => 
                       </Button>
                       <Button
                         tag={Link}
-                        to={`${match.url}/${productCategory.id}/delete`}
+                        to={`/product-category/${productCategory.id}/delete`}
                         color="danger"
                         size="sm"
                         data-cy="entityDeleteButton"

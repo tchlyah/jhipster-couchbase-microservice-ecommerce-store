@@ -12,13 +12,9 @@ describe('/admin', () => {
   const username = Cypress.env('E2E_USERNAME') ?? 'admin';
   const password = Cypress.env('E2E_PASSWORD') ?? 'admin';
 
-  before(() => {
-    cy.window().then(win => {
-      win.sessionStorage.clear();
-    });
-    cy.clearCookies();
-    cy.visit('');
+  beforeEach(() => {
     cy.login(username, password);
+    cy.visit('');
   });
 
   describe('/user-management', () => {

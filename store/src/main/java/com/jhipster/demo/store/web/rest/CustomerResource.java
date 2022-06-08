@@ -113,7 +113,7 @@ public class CustomerResource {
                 }
 
                 return customerService
-                    .save(customer)
+                    .update(customer)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                     .map(result ->
                         ResponseEntity
@@ -176,13 +176,16 @@ public class CustomerResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of customers in body.
      */
     @GetMapping("/customers")
-    public Mono<ResponseEntity<List<Customer>>> getAllCustomers(Pageable pageable, ServerHttpRequest request) {
+    public Mono<ResponseEntity<List<Customer>>> getAllCustomers(
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable,
+        ServerHttpRequest request
+    ) {
         log.debug("REST request to get a page of Customers");
         return customerService
             .countAll()
             .zipWith(customerService.findAll(pageable).collectList())
-            .map(countWithEntities -> {
-                return ResponseEntity
+            .map(countWithEntities ->
+                ResponseEntity
                     .ok()
                     .headers(
                         PaginationUtil.generatePaginationHttpHeaders(
@@ -190,8 +193,8 @@ public class CustomerResource {
                             new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
                         )
                     )
-                    .body(countWithEntities.getT2());
-            });
+                    .body(countWithEntities.getT2())
+            );
     }
 
     /**
@@ -236,7 +239,11 @@ public class CustomerResource {
      * @return the result of the search.
      */
     @GetMapping("/_search/customers")
-    public Mono<ResponseEntity<Flux<Customer>>> searchCustomers(@RequestParam String query, Pageable pageable, ServerHttpRequest request) {
+    public Mono<ResponseEntity<Flux<Customer>>> searchCustomers(
+        @RequestParam String query,
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable,
+        ServerHttpRequest request
+    ) {
         log.debug("REST request to search for a page of Customers for query {}", query);
         return customerService
             .countAll()

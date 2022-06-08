@@ -4,25 +4,27 @@ import { Button, Row, Col, FormText } from 'reactstrap';
 import { isNumber, Translate, translate, ValidatedField, ValidatedForm, ValidatedBlobField } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { IProductCategory } from 'app/shared/model/product/product-category.model';
-import { getEntities as getProductCategories } from 'app/entities/product/product-category/product-category.reducer';
-import { getEntity, updateEntity, createEntity, reset } from './product.reducer';
-import { IProduct } from 'app/shared/model/product/product.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
 import { mapIdList } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+
+import { IProductCategory } from 'app/shared/model/product/product-category.model';
+import { getEntities as getProductCategories } from 'app/entities/product/product-category/product-category.reducer';
+import { IProduct } from 'app/shared/model/product/product.model';
+import { Size } from 'app/shared/model/enumerations/size.model';
+import { getEntity, updateEntity, createEntity, reset } from './product.reducer';
 
 export const ProductUpdate = (props: RouteComponentProps<{ id: string }>) => {
   const dispatch = useAppDispatch();
 
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
-  const productCategories = useAppSelector(state => state.productCategory.entities);
-  const productEntity = useAppSelector(state => state.product.entity);
-  const loading = useAppSelector(state => state.product.loading);
-  const updating = useAppSelector(state => state.product.updating);
-  const updateSuccess = useAppSelector(state => state.product.updateSuccess);
-
+  const productCategories = useAppSelector(state => state.store.productCategory.entities);
+  const productEntity = useAppSelector(state => state.store.product.entity);
+  const loading = useAppSelector(state => state.store.product.loading);
+  const updating = useAppSelector(state => state.store.product.updating);
+  const updateSuccess = useAppSelector(state => state.store.product.updateSuccess);
+  const sizeValues = Object.keys(Size);
   const handleClose = () => {
     props.history.push('/product' + props.location.search);
   };
@@ -47,7 +49,7 @@ export const ProductUpdate = (props: RouteComponentProps<{ id: string }>) => {
     const entity = {
       ...productEntity,
       ...values,
-      productCategory: productCategories.find(it => it.id.toString() === values.productCategoryId.toString()),
+      productCategory: productCategories.find(it => it.id.toString() === values.productCategory.toString()),
     };
 
     if (isNew) {
@@ -63,7 +65,7 @@ export const ProductUpdate = (props: RouteComponentProps<{ id: string }>) => {
       : {
           productSize: 'S',
           ...productEntity,
-          productCategoryId: productEntity?.productCategory?.id,
+          productCategory: productEntity?.productCategory?.id,
         };
 
   return (
@@ -127,11 +129,11 @@ export const ProductUpdate = (props: RouteComponentProps<{ id: string }>) => {
                 data-cy="productSize"
                 type="select"
               >
-                <option value="S">{translate('storeApp.Size.S')}</option>
-                <option value="M">{translate('storeApp.Size.M')}</option>
-                <option value="L">{translate('storeApp.Size.L')}</option>
-                <option value="XL">{translate('storeApp.Size.XL')}</option>
-                <option value="XXL">{translate('storeApp.Size.XXL')}</option>
+                {sizeValues.map(size => (
+                  <option value={size} key={size}>
+                    {translate('storeApp.Size.' + size)}
+                  </option>
+                ))}
               </ValidatedField>
               <ValidatedBlobField
                 label={translate('storeApp.productProduct.image')}
@@ -143,7 +145,7 @@ export const ProductUpdate = (props: RouteComponentProps<{ id: string }>) => {
               />
               <ValidatedField
                 id="product-productCategory"
-                name="productCategoryId"
+                name="productCategory"
                 data-cy="productCategory"
                 label={translate('storeApp.productProduct.productCategory')}
                 type="select"

@@ -8,13 +8,9 @@ import {
 } from '../../support/commands';
 
 describe('forgot your password', () => {
-  const username = Cypress.env('E2E_USERNAME') ?? 'admin';
+  const username = Cypress.env('E2E_USERNAME') ?? 'user';
 
-  before(() => {
-    cy.window().then(win => {
-      win.sessionStorage.clear();
-    });
-    cy.clearCookies();
+  beforeEach(() => {
     cy.visit('');
     cy.clickOnLoginItem();
     cy.get(usernameLoginSelector).type(username);
@@ -30,7 +26,6 @@ describe('forgot your password', () => {
     cy.get(emailResetPasswordSelector).should('have.class', classInvalid).type('user@gmail.com');
     cy.get(submitInitResetPasswordSelector).click({ force: true });
     cy.get(emailResetPasswordSelector).should('have.class', classValid);
-    cy.get(emailResetPasswordSelector).clear();
   });
 
   it('should be able to init reset password', () => {

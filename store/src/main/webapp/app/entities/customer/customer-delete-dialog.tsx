@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { Translate } from 'react-jhipster';
@@ -8,22 +8,25 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity, deleteEntity } from './customer.reducer';
 
 export const CustomerDeleteDialog = (props: RouteComponentProps<{ id: string }>) => {
+  const [loadModal, setLoadModal] = useState(false);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(getEntity(props.match.params.id));
+    setLoadModal(true);
   }, []);
 
-  const customerEntity = useAppSelector(state => state.customer.entity);
-  const updateSuccess = useAppSelector(state => state.customer.updateSuccess);
+  const customerEntity = useAppSelector(state => state.store.customer.entity);
+  const updateSuccess = useAppSelector(state => state.store.customer.updateSuccess);
 
   const handleClose = () => {
     props.history.push('/customer' + props.location.search);
   };
 
   useEffect(() => {
-    if (updateSuccess) {
+    if (updateSuccess && loadModal) {
       handleClose();
+      setLoadModal(false);
     }
   }, [updateSuccess]);
 
