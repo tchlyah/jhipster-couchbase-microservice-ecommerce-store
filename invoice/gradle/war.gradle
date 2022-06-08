@@ -1,7 +1,7 @@
 apply plugin: "war"
 
 bootWar {
-    mainClassName = "com.jhipster.demo.invoice.InvoiceApp"
+    mainClass = "com.jhipster.demo.invoice.InvoiceApp"
     includes = ["WEB-INF/**", "META-INF/**"]
 }
 

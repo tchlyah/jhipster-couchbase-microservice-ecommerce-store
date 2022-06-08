@@ -57,7 +57,6 @@ class InvoiceResourceIT {
 
     private static final String ENTITY_API_URL = "/api/invoices";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
-    private static final String ENTITY_SEARCH_API_URL = "/api/_search/invoices";
 
     @Autowired
     private InvoiceRepository invoiceRepository;
@@ -334,7 +333,7 @@ class InvoiceResourceIT {
         assertThat(testInvoice.getStatus()).isEqualTo(UPDATED_STATUS);
         assertThat(testInvoice.getPaymentMethod()).isEqualTo(UPDATED_PAYMENT_METHOD);
         assertThat(testInvoice.getPaymentDate()).isEqualTo(UPDATED_PAYMENT_DATE);
-        assertThat(testInvoice.getPaymentAmount()).isEqualTo(UPDATED_PAYMENT_AMOUNT);
+        assertThat(testInvoice.getPaymentAmount()).isEqualByComparingTo(UPDATED_PAYMENT_AMOUNT);
     }
 
     @Test
@@ -542,28 +541,5 @@ class InvoiceResourceIT {
         SecurityContextHolder.setContext(TestSecurityContextHolder.getContext());
         List<Invoice> invoiceList = invoiceRepository.findAll();
         assertThat(invoiceList).hasSize(databaseSizeBeforeDelete - 1);
-    }
-
-    @Test
-    void searchInvoice() throws Exception {
-        // Initialize the database
-        invoiceRepository.save(invoice);
-
-        // Wait for the invoice to be indexed
-        TestUtil.retryUntilNotEmpty(() -> invoiceRepository.search("id:" + invoice.getId()));
-
-        // Search the invoice
-        restInvoiceMockMvc
-            .perform(get(ENTITY_SEARCH_API_URL + "?query=id:" + invoice.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(invoice.getId())))
-            .andExpect(jsonPath("$.[*].code").value(hasItem(DEFAULT_CODE)))
-            .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())))
-            .andExpect(jsonPath("$.[*].details").value(hasItem(DEFAULT_DETAILS)))
-            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
-            .andExpect(jsonPath("$.[*].paymentMethod").value(hasItem(DEFAULT_PAYMENT_METHOD.toString())))
-            .andExpect(jsonPath("$.[*].paymentDate").value(hasItem(DEFAULT_PAYMENT_DATE.toString())))
-            .andExpect(jsonPath("$.[*].paymentAmount").value(hasItem(sameNumber(DEFAULT_PAYMENT_AMOUNT))));
     }
 }

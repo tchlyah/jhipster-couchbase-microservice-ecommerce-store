@@ -1,6 +1,7 @@
 package com.jhipster.demo.invoice.domain;
 
 import static com.jhipster.demo.invoice.config.Constants.ID_DELIMITER;
+import static com.jhipster.demo.invoice.domain.Shipment.TYPE_NAME;
 import static org.springframework.data.couchbase.core.mapping.id.GenerationStrategy.UNIQUE;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -10,24 +11,23 @@ import java.time.Instant;
 import java.util.stream.Collectors;
 import javax.validation.constraints.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.couchbase.core.mapping.Document;
 import org.springframework.data.couchbase.core.mapping.Field;
 import org.springframework.data.couchbase.core.mapping.id.GeneratedValue;
-import org.springframework.data.couchbase.core.mapping.id.IdPrefix;
+import org.springframework.data.couchbase.repository.Collection;
 
 /**
  * A Shipment.
  */
 @Document
+@TypeAlias(TYPE_NAME)
+@Collection(TYPE_NAME)
 public class Shipment implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String PREFIX = "shipment";
-
-    @SuppressWarnings("unused")
-    @IdPrefix
-    private String prefix = PREFIX;
+    public static final String TYPE_NAME = "shipment";
 
     @Id
     @GeneratedValue(strategy = UNIQUE, delimiter = ID_DELIMITER)

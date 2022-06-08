@@ -42,7 +42,6 @@ class ShipmentResourceIT {
 
     private static final String ENTITY_API_URL = "/api/shipments";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
-    private static final String ENTITY_SEARCH_API_URL = "/api/_search/shipments";
 
     @Autowired
     private ShipmentRepository shipmentRepository;
@@ -398,24 +397,5 @@ class ShipmentResourceIT {
         SecurityContextHolder.setContext(TestSecurityContextHolder.getContext());
         List<Shipment> shipmentList = shipmentRepository.findAll();
         assertThat(shipmentList).hasSize(databaseSizeBeforeDelete - 1);
-    }
-
-    @Test
-    void searchShipment() throws Exception {
-        // Initialize the database
-        shipmentRepository.save(shipment);
-
-        // Wait for the shipment to be indexed
-        TestUtil.retryUntilNotEmpty(() -> shipmentRepository.search("id:" + shipment.getId()));
-
-        // Search the shipment
-        restShipmentMockMvc
-            .perform(get(ENTITY_SEARCH_API_URL + "?query=id:" + shipment.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(shipment.getId())))
-            .andExpect(jsonPath("$.[*].trackingCode").value(hasItem(DEFAULT_TRACKING_CODE)))
-            .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())))
-            .andExpect(jsonPath("$.[*].details").value(hasItem(DEFAULT_DETAILS)));
     }
 }

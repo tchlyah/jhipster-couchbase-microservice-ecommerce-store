@@ -9,7 +9,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -96,7 +95,7 @@ public class ShipmentResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Shipment result = shipmentService.save(shipment);
+        Shipment result = shipmentService.update(shipment);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, shipment.getId()))
@@ -146,7 +145,7 @@ public class ShipmentResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of shipments in body.
      */
     @GetMapping("/shipments")
-    public ResponseEntity<List<Shipment>> getAllShipments(Pageable pageable) {
+    public ResponseEntity<List<Shipment>> getAllShipments(@org.springdoc.api.annotations.ParameterObject Pageable pageable) {
         log.debug("REST request to get a page of Shipments");
         Page<Shipment> page = shipmentService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -177,21 +176,5 @@ public class ShipmentResource {
         log.debug("REST request to delete Shipment : {}", id);
         shipmentService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
-    }
-
-    /**
-     * {@code SEARCH  /_search/shipments?query=:query} : search for the shipment corresponding
-     * to the query.
-     *
-     * @param query the query of the shipment search.
-     * @param pageable the pagination information.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/shipments")
-    public ResponseEntity<List<Shipment>> searchShipments(@RequestParam String query, Pageable pageable) {
-        log.debug("REST request to search for a page of Shipments for query {}", query);
-        Page<Shipment> page = shipmentService.search(query, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }

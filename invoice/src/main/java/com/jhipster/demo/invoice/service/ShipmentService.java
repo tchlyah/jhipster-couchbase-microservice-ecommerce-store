@@ -35,6 +35,17 @@ public class ShipmentService {
     }
 
     /**
+     * Update a shipment.
+     *
+     * @param shipment the entity to save.
+     * @return the persisted entity.
+     */
+    public Shipment update(Shipment shipment) {
+        log.debug("Request to save Shipment : {}", shipment);
+        return shipmentRepository.save(shipment);
+    }
+
+    /**
      * Partially update a shipment.
      *
      * @param shipment the entity to update partially.
@@ -91,17 +102,5 @@ public class ShipmentService {
     public void delete(String id) {
         log.debug("Request to delete Shipment : {}", id);
         shipmentRepository.deleteById(id);
-    }
-
-    /**
-     * Search for the shipment corresponding to the query.
-     *
-     * @param query the query of the search.
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    public Page<Shipment> search(String query, Pageable pageable) {
-        log.debug("Request to search for a page of Shipments for query {}", query);
-        return shipmentRepository.search(query, pageable);
     }
 }
